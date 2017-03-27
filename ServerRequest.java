@@ -1,19 +1,100 @@
 import java.io.*;
-import java.net.Socket;
+import java.net.*;//Socket;
 import java.net.URLDecoder;
-import java.util.Date;
+import java.util.*;//Date;
 import java.util.TimeZone;
-import java.text.SimpleDateFormat;
+import java.text.*;//SimpleDateFormat;
 
 public class ServerRequest 
 {
 	//code for socket(?)
-	
+	Scanner inputStream = null;
+	String request;
+	String codeStatus;
 	public ServerRequest()
 	{
 		//constructor shit(?)
 		
 	}
+	
+	//connection built
+	inputStream =new Scanner(new InputStreamReader(clientSocket.getInputStream())); 
+	
+	Date connectionDate = new Date();//get the date 
+	
+	String request = inputStream.readLine(); // get first line of the request
+	String[] requestArray = request.split("\\s+"); // and break it into parts of array "\\s+" = regex for blank spaces
+	
+	//outputStream (?) = PrintWriter (clientSocket.getOutputStream(), true)
+	
+	if (requestArray.length != 3 ) 
+	{
+		codeStatus = "400" ; //400 Bad Request;
+		//response(400);
+		//do some things
+		
+		return; //exit!
+	}
+	
+	if (!requestArray[0].equals("GET") ) {
+		codeStatus = "405" ; //405 Method Not Allowed
+		//response(405);
+		//do some things
+		
+		return; //exit!
+	}
+	
+	if (! (requestArray[2].equals("HTTP/1.1") || requestArray[2].equals("HTTP/1.0") )  )
+	{
+		codeStatus = "400";
+		//response(400);
+		//do some things
+		
+		return; //exit!
+	}
+	
+	String header = inputStream.readLine();
+	if (header.startsWith("Host:") ) {
+		String host = header;
+	}
+	else {
+		host = "null";
+		//http 1.0 (?)
+		
+	}
+	
+	/*File file = new File ( , ) ;
+	kapws me to requestArray[1]
+	if (!file.exists())
+	{
+		codeStatus = "404";
+		//response(404);
+		//do some things
+		return ; 
+	}
+	
+	
+	//then we are good to go!
+	String version = requestArray[2]; //version = 1.1 or 1.0
+	if (host.equals("null")
+	{
+		version = "HTTP/1.0";
+	}
+	
+	codeStatus = "200";
+	if ( file.isFile() ) //it could be also a directory
+	{
+		
+		//do things for file
+	}
+	else if ( file.isDirectory() ) {
+		//do things for directory
+		//build html?
+	}
+	
+	
+	*/
+	
 	
 	public void response(String responseCode)
 	{
