@@ -69,6 +69,8 @@ public class Main{
 		System.out.println(resp);
 		pw.println(resp);
 		
+		pw.flush();
+		
 		
 	}
 	
@@ -108,7 +110,7 @@ public class Main{
 		resp=htmlBuilder.toString();
 		pw.println(resp);
 		pw.flush();
-		pw.close();
+		
 		
 		
 	}
@@ -119,12 +121,13 @@ public class Main{
 		String path="file:///C:\\Users\\Κατερίνα\\Desktop\\"+tokens1[1];
 		//Calling method for status code
 		int status = statusCode(Line1,0);
-		//Calling method to send HTTP
-		makeHTTPresp(status,path,tokens2[1],pw);
 		//Calling method to send html
 		makeHTMLresp(status, path,pw);
 		
+		//Calling method to send HTTP
+		makeHTTPresp(status,path,tokens2[1],pw);
 		
+		pw.close();
 		
 		
 	}
@@ -163,9 +166,11 @@ public class Main{
 						String[] tokens = Req.split(" ");
 						if(tokens[0].equals("GET")){
 							Line1=Req;
+							
 						}
 						else if(tokens[0].equals("Host:")){
 							Line2=Req;
+							
 							makeResp(Line1,Line2,toClient);
 						}
 					}
