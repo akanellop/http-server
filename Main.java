@@ -1,142 +1,10 @@
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.text.*;
+
 public class Main{
 	
-	public static int statusCode(String req, int flag){ // isos xreiazontai kai alla orismata
-		String[] requestArray = req.split(" ");
-		int codeStatus;
-		//xreiazetai diafotetiko path
-		requestArray[1]=requestArray[1].substring(1);
-		//String path=("file:///C:\\Users\\Κατερίνα\\Desktop\\"+(requestArray[1]));
-		String path=("C:\\Users\\Κατερίνα\\Desktop\\"+(requestArray[1]));
-		File file = new File(path);
-		
-		System.out.println("\n\n"+path+"\n\n");
-		if( file.exists()){
-			System.out.println("\n\ncheck\n\n");
-		}
-		if(flag==1){ //flag is 1 only if the status code is called by an exception (? maybe wrong)
-			codeStatus = 4 ;//505 Internal Error
-			return codeStatus;
-		}
-		else if((requestArray.length != 3) || (! (requestArray[2].equals("HTTP/1.1")))){
-			codeStatus = 1; //400 Bad Request
-			return  codeStatus;
-		}
-		else if (!requestArray[0].equals("GET") ) {
-			codeStatus = 3 ; //403 Method Not Allowed
-			return codeStatus;
-		}
-		else if(! file.exists()){
-			codeStatus = 2; // 404 File not found
-			return codeStatus;
-		}
-		else{
-			return 0;// 200 OK
-		}
-	}
-	
-	public static void makeHTTPresp(int status,String path,String host, PrintWriter pw){
-		File file=new File(path);
-		String resp=("");
-		String title;
-			switch (status)
-			{
-				case 0:
-					title = "200 OK";
-					break;
-				case 1:
-					title = "400 Bad Request";
-					break;
-				case 2:
-					title = "404 File Not Found";
-					break;
-				case 3:
-					title = "405 Method Not Allowed";
-					break;
-				case 4:
-					title = "505 Internal Server Error";
-					break;
-				default:
-					title = "Unknown Error appeared";
-			}
-			
-		resp += ("HTTP/1.1 " + title +"\n");
-		Date date = new Date();
-		resp += (date+"\n");
-		resp += ("Server: CE325 (Java based server)  \r\n");
-		resp +=("Last-Modified: " + file.lastModified() +"\n");
-		resp +=("Content-Length: "+ file.length()+"\n");
-		resp += ("Connection: close  \n");
-		resp += ("Content- Type: text/plain \r\n");
-		
-		System.out.println(resp);
-		pw.println(resp);
-		
-		pw.flush();
-		
-		
-	}
-	
-	public static void	makeHTMLresp(int status,String path, PrintWriter pw){
-		File file=new File(path);
-		String resp="";
-		StringBuilder htmlBuilder =new StringBuilder();
-		htmlBuilder.append("<!DOCTYPE html>");
-		htmlBuilder.append("<html>");
-		htmlBuilder.append("<head>");
-		htmlBuilder.append("<title>HTTP_SERVER</title>");
-		htmlBuilder.append("<body>");
-		
-		switch (status)
-			{
-				case 0:
-					//needs correct code		
-					break;
-				case 1:
-					htmlBuilder.append("<p>400 Bad Request</p>");
-					break;
-				case 2:
-					htmlBuilder.append("<p>404 File Not Found</p>");
-					break;
-				case 3:
-					htmlBuilder.append("<p>405 Method Not Allowed</p>");
-					break;
-				case 4:
-					htmlBuilder.append("<p>505 Internal Server Error</p>");
-					break;
-				default:
-					htmlBuilder.append("<p>Unknown Error appeared</p>");
-			}
-		
-		htmlBuilder.append("</body>");
-		htmlBuilder.append("</html>");
-		resp=htmlBuilder.toString();
-		pw.println(resp);
-		pw.flush();
-		
-		
-		
-	}
-	
-	public static void makeResp(String Line1,String Line2,PrintWriter pw) throws Exception{
-		String[] tokens1=Line1.split(" ");
-		String[] tokens2=Line2.split(" ");
-		String path="file:///C:\\Users\\Κατερίνα\\Desktop\\"+tokens1[1];
-		//Calling method for status code
-		int status = statusCode(Line1,0);
-		//Calling method to send html
-		makeHTMLresp(status, path,pw);
-		
-		//Calling method to send HTTP
-		makeHTTPresp(status,path,tokens2[1],pw);
-		
-		pw.close();
-		
-		
-	}
-
 	public static void main(String[] args){
 		String Line1="";
 		String Line2="";
@@ -161,6 +29,8 @@ public class Main{
 			//for getting the input from client (getting request)
 			BufferedReader fromClient = new BufferedReader(new InputStreamReader(client.getInputStream()));
 			//reading from client
+			
+			//runs forever until you escape with CTRL+C
 			while(true){
 				String Req="";
 				try{
@@ -176,18 +46,213 @@ public class Main{
 						else if(tokens[0].equals("Host:")){
 							Line2=Req;
 							
-							makeResp(Line1,Line2,toClient);
+							//etsi douleuei mono gia http 1.1 ...
+							makeResp(Line1,Line2,toClient);//move it to enother line
 						}
 					}
 				}
 				catch(Exception ex){}
 			}
 			
-			
 		}
 		catch(Exception e){}
 			
+	}
+	
+	public static void makeResp(String Line1,String Line2,PrintWriter pw) throws Exception{
+		String[] tokens1=Line1.split(" ");
+		String[] tokens2=Line2.split(" ");
+		
+		System.out.println("tokens[1] = " + tokens1[1] );
+		
+		
+		//String[] requestArray = req.split(" ");
+		tokens1[1]=tokens1[1].substring(1); //eliminate first "/" character
+		
+		
+		String path = ("C:\\Users\\kaslou\\Desktop\\"+tokens1[1]);
+		//String path="C:\\Users\\Κατερίνα\\Desktop\\"+tokens1[1];
+		
+		//Calling method for statusCode
+		int status = statusCode(Line1,0);
+		
+		//Calling method to send html
+		makeHTMLresp(status, path,pw);
+		
+		//Calling method to send HTTP
+		makeHTTPresp(status,path,tokens2[1],pw);
+		
+		pw.close();
+		
+	}
+	
+	public static int statusCode(String req, int flag){ // isos xreiazontai kai alla orismata
+		
+		//splits first line
+		String[] requestArray = req.split(" ");
+		int codeStatus;
+		
+		//xreiazetai diafotetiko path
+		requestArray[1]=requestArray[1].substring(1); //eliminate first "/" character
+		
+		//String path=("file:///C:\\Users\\Κατερίνα\\Desktop\\"+(requestArray[1]));
+		String path = ("C:\\Users\\kaslou\\Desktop\\"+requestArray[1]);
+		//String path=("C:\\Users\\Κατερίνα\\Desktop\\"+(requestArray[1]));
+		File file = new File(path);
+		
+		System.out.println("\n"+path+"\n");
+		if( file.exists()){
+			System.out.println("\nIT DOES EXIST\n\n");
 		}
+		else {
+			System.out.println("\n\nFILE NOT FOUND\n\n");
+		}
+		
+		
+		//fix flag 
+		if(flag==1){ //flag is 1 only if the status code is called by an exception (? maybe wrong)
+			codeStatus = 500 ;//500 Internal Error
+			System.out.println("500 internal error");
+			return codeStatus;
+		}
+		else if((requestArray.length != 3) || (! (requestArray[2].equals("HTTP/1.1")))){
+			codeStatus = 400; //400 Bad Request
+			System.out.println("400 Bad Request");
+			return  codeStatus;
+		}
+		else if (!requestArray[0].equals("GET") ) {
+			codeStatus = 405 ; //405 Method Not Allowed
+			System.out.println("405 Method not allowed");
+			return codeStatus;
+		}
+		else if(! file.exists()){
+			codeStatus = 404; // 404 Not Found
+			System.out.println("404, file not found");
+			return codeStatus;
+		}
+		else{
+			System.out.println("200, everything is ok");
+			return 200;// 200 OK
+		}
+	}
+	
+	public static void makeHTTPresp(int status,String path,String host, PrintWriter pw){
+		File file=new File(path);
+		//giati na xreiazomaste path?
+		
+		String resp=("");
+		String title;
+		
+		if (file.exists() ) {
+			long len=file.length();
+			System.out.println(" file length: \n\n\n"+len);
+		}
+		else {
+			System.out.println("path = " + path );
+			System.out.println(" DOESNTWORK\n");
+		}
+		
+		//e gia kapoio logo, to file doesnt exist edw
+		
+			switch (status)
+			{
+				case 200:
+					title = "200 OK";
+					break;
+				case 400:
+					title = "400 Bad Request";
+					break;
+				case 404:
+					title = "404 File Not Found";
+					break;
+				case 405:
+					title = "405 Method Not Allowed";
+					break;
+				case 500:
+					title = "505 Internal Server Error";
+					break;
+				default:
+					title = "Unknown Error appeared";
+			}
+			
+			
+		resp += ("HTTP/1.1 " + title +"\n<br><br>");
+		Date date = new Date();
+		resp += (date+"\n<br>");
+		resp += ("Server: CE325 (Java based server)  \r\n<br>");
+		resp +=("Last-Modified: " + getLastModifiedDate(file.lastModified()) +"\r\n<br>");
+		resp +=("Content-Length: "+ file.length()+"\r\n<br>");
+		resp += ("Connection: close  \r\n<br>");
+		
+		resp += ("Content- Type: text/plain \r\n<br>"); // get for each content- type
+		
+		//System.out.println(resp);
+		pw.println(resp);
+		
+		pw.flush();
+		
+		
+	}
+	
+	public static void	makeHTMLresp(int status,String path, PrintWriter pw){
+		//File file=new File(path); //de nomizw pws to path xreiazetai
+		String resp="";
+		StringBuilder htmlBuilder =new StringBuilder();
+		htmlBuilder.append("<!DOCTYPE html>\r\n<br>");
+		htmlBuilder.append("<html>\r\n");
+		htmlBuilder.append("<head>\r\n");
+		htmlBuilder.append("<title>HTTP_SERVER</title>\r\n");
+		htmlBuilder.append("<body>\r\n");
+		
+		switch (status)
+			{
+				case 200:
+					//needs correct code	
+					//send file
+					/*
+					
+					html.append("<td class=\"link\"><a href=\"" + ext + "\">" + arxeio.getName() + "</a></td>");
+					*/
+					break;
+				case 400:
+					htmlBuilder.append("<p>400 Bad Request</p>");
+					break;
+				case 404:
+					htmlBuilder.append("<p>404 File Not Found</p>");
+					break;
+				case 405:
+					htmlBuilder.append("<p>405 Method Not Allowed</p>");
+					break;
+				case 500:
+					htmlBuilder.append("<p>505 Internal Server Error</p>");
+					break;
+				default:
+					htmlBuilder.append("<p>Unknown Error appeared</p>");
+			}
+		
+		htmlBuilder.append("</body>\r\n");
+		htmlBuilder.append("</html>\r\n");
+		
+		resp=htmlBuilder.toString();
+		
+		pw.println(resp);
+		pw.flush(); //flush-save currently to PrintWriter
+		
+		
+		
+	}
+	
+	public static String getLastModifiedDate( long miliseconds ){
+    
+			String dateFormat = "EEE, d MMM YYYY HH:mm:ss z";
+			SimpleDateFormat dateFormatGmt = new SimpleDateFormat( dateFormat );
+			dateFormatGmt.setTimeZone( TimeZone.getTimeZone( "GMT" ) );
+
+        return dateFormatGmt.format( miliseconds );
+    }
+	
+
+	
 		
 	
 }
