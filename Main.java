@@ -7,10 +7,15 @@ public class Main{
 		String[] requestArray = req.split(" ");
 		int codeStatus;
 		//xreiazetai diafotetiko path
-		String path=("file:///C:\\Users\\Κατερίνα\\Desktop\\"+(requestArray[1]));
+		requestArray[1]=requestArray[1].substring(1);
+		//String path=("file:///C:\\Users\\Κατερίνα\\Desktop\\"+(requestArray[1]));
+		String path=("C:\\Users\\Κατερίνα\\Desktop\\"+(requestArray[1]));
 		File file = new File(path);
 		
-		
+		System.out.println("\n\n"+path+"\n\n");
+		if( file.exists()){
+			System.out.println("\n\ncheck\n\n");
+		}
 		if(flag==1){ //flag is 1 only if the status code is called by an exception (? maybe wrong)
 			codeStatus = 4 ;//505 Internal Error
 			return codeStatus;
@@ -60,11 +65,11 @@ public class Main{
 		resp += ("HTTP/1.1 " + title +"\n");
 		Date date = new Date();
 		resp += (date+"\n");
-		resp += ("Server: CE325 (Java based server)  \n");
+		resp += ("Server: CE325 (Java based server)  \r\n");
 		resp +=("Last-Modified: " + file.lastModified() +"\n");
 		resp +=("Content-Length: "+ file.length()+"\n");
 		resp += ("Connection: close  \n");
-		resp += ("Content- Type: edo xreaizetai xrisi tou mime \n");
+		resp += ("Content- Type: text/plain \r\n");
 		
 		System.out.println(resp);
 		pw.println(resp);
