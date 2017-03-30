@@ -9,14 +9,21 @@ public class Main{
 		String Line1="";
 		String Line2="";
 		
-		
-		if (args.length != 1) {
-		  System.err.println("Usage: java EchoServer <port number>");
+		if (args.length <1) {
+		  System.err.println("Usage: java EchoServer <port number> or <root path>");
 		  System.exit(1);
 		}
 		
 		//takes as arguments the port and the path for root server
 		int portNumber = Integer.parseInt(args[0]);
+		String rootPath=""; // String showing the root directory of the server
+		if(args.length==2){
+			rootPath= args[1];
+		}
+		else {
+			rootPath="C:\\root\\";
+		}
+		File file =new File(rootPath);
 		try{
 			//creates server and client for specific socket
 			ServerSocket server = new ServerSocket(Integer.parseInt(args[0]));
@@ -41,13 +48,15 @@ public class Main{
 						String[] tokens = Req.split(" ");
 						if(tokens[0].equals("GET")){
 							Line1=Req;
-							
+							tokens[1]=tokens[1].substring(1); //eliminate first "/" character
+							rootPath = rootPath+tokens[1];
+							file =new File(rootPath);
+			
 						}
 						else if(tokens[0].equals("Host:")){
 							Line2=Req;
-							
 							//etsi douleuei mono gia http 1.1 ...
-							makeResp(Line1,Line2,toClient);//move it to enother line
+							makeResp(Line1,Line2,toClient,rootPath,file);//move it to enother line
 						}
 					}
 				}
@@ -59,34 +68,26 @@ public class Main{
 			
 	}
 	
-	public static void makeResp(String Line1,String Line2,PrintWriter pw) throws Exception{
+	public static void makeResp(String Line1,String Line2,PrintWriter pw,String path, File f) throws Exception{
 		String[] tokens1=Line1.split(" ");
 		String[] tokens2=Line2.split(" ");
 		
 		System.out.println("tokens[1] = " + tokens1[1] );
 		
-		
-		//String[] requestArray = req.split(" ");
-		tokens1[1]=tokens1[1].substring(1); //eliminate first "/" character
-		
-		
-		String path = ("C:\\Users\\kaslou\\Desktop\\"+tokens1[1]);
-		//String path="C:\\Users\\Κατερίνα\\Desktop\\"+tokens1[1];
-		
 		//Calling method for statusCode
-		int status = statusCode(Line1,0);
+		int status = statusCode(Line1,0, path,f);
 		
 		//Calling method to send html
-		makeHTMLresp(status, path,pw);
+		makeHTMLresp(status, path,pw,f);
 		
 		//Calling method to send HTTP
-		makeHTTPresp(status,path,tokens2[1],pw);
+		makeHTTPresp(status,path,tokens2[1],pw,f);
 		
 		pw.close();
 		
 	}
 	
-	public static int statusCode(String req, int flag){ // isos xreiazontai kai alla orismata
+	public static int statusCode(String req, int flag,String path,File file){ // isos xreiazontai kai alla orismata
 		
 		//splits first line
 		String[] requestArray = req.split(" ");
@@ -95,10 +96,7 @@ public class Main{
 		//xreiazetai diafotetiko path
 		requestArray[1]=requestArray[1].substring(1); //eliminate first "/" character
 		
-		//String path=("file:///C:\\Users\\Κατερίνα\\Desktop\\"+(requestArray[1]));
-		String path = ("C:\\Users\\kaslou\\Desktop\\"+requestArray[1]);
-		//String path=("C:\\Users\\Κατερίνα\\Desktop\\"+(requestArray[1]));
-		File file = new File(path);
+		
 		
 		System.out.println("\n"+path+"\n");
 		if( file.exists()){
@@ -136,9 +134,7 @@ public class Main{
 		}
 	}
 	
-	public static void makeHTTPresp(int status,String path,String host, PrintWriter pw){
-		File file=new File(path);
-		//giati na xreiazomaste path?
+	public static void makeHTTPresp(int status,String path,String host, PrintWriter pw, File file){
 		
 		String resp=("");
 		String title;
@@ -194,7 +190,7 @@ public class Main{
 		
 	}
 	
-	public static void	makeHTMLresp(int status,String path, PrintWriter pw){
+	public static void	makeHTMLresp(int status,String path, PrintWriter pw,File f){
 		//File file=new File(path); //de nomizw pws to path xreiazetai
 		String resp="";
 		StringBuilder htmlBuilder =new StringBuilder();
