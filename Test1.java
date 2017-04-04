@@ -42,6 +42,7 @@ public class Test1 {
 				
 			}*/
 			String [] parts ;
+			String versionOfHttp;
 			//String codeStatus;
 			
 			
@@ -58,7 +59,15 @@ public class Test1 {
 			// remove "/" character of C:\root\/
 			parts[1] = parts[1].substring(1); 
 			
-		
+			
+			//Get versionOfHttp
+			if  (parts[2].equals("HTTP/1.1") ) {
+				versionOfHttp = parts[2];
+			}
+			else if (parts[2].equals("HTTP/1.0") ){
+				versionOfHttp = parts[2];
+			}
+			
 			//Create Filepath
 			File filepath= new File (ROOT + parts[1]);
 			
@@ -103,7 +112,7 @@ public class Test1 {
 				//send file, do it in method (?)
 				codeStatus = "200";
 				if (filepath.isFile() ) {
-					//sendFile
+					//sendFile(String codeStatus, String versionOfHttp,PrintWriter out, File filepath, String extension, OutputStream data);
 				}
 				else if (filepath.isDirectory() ) {
 					//sendDirectory
