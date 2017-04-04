@@ -191,7 +191,7 @@ public class Test1 {
         html.append( "<html>\r\n" );
         html.append( "<head>\r\n" );
 		
-		//Styling(copy paste)
+		//Uncomment the following if you want the ERROR text to be red
        // html.append( "<style> .size, .date {padding: 0 32px} h1.header {color: red; vertical-align: middle;}</style>\r\n" );
 		
 		//Title and Body we chose earlier
@@ -213,7 +213,7 @@ public class Test1 {
 		Date date = new Date();
 		out.print( "HTTP/1.1 " + codeStatus + "\r\n" );
         out.print( "Date: " + date + "\r\n" );
-        out.print( "CE325 JAVA based Server" + "\r\n" );
+        out.print( "CE325 (Java based Server)" + "\r\n" );
 		//toString method returns a string representing the data in this sequence
 		out.print( "Content-length: " + html.toString().length() + "\r\n" ); 
         out.print( "Connection: close\r\n" );
