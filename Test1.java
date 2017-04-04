@@ -115,16 +115,17 @@ public class Test1 {
 				//Create an OutputStream so we can send data/bytes there for the client
 				OutputStream data = new BufferedOutputStream( clientSocket.getOutputStream());
 				
-				/*
-				extensionForMime will now get updated to the value we need
-				For example, .txt=text/plain
-				
-				*/
+
 				try {
+					/*
+					extensionForMime will now get updated to the value we need
+					For example, .txt=text/plain
+					*/
 					extensionForMime = getMimeExtension(extensionForMime);
 				}catch(Exception Exxxx){
 					System.out.println("error before going to sendFile or sendDirectory");
 				}
+				//check
 				System.out.println("extensionForMime is : " + extensionForMime); 
 				
 				if (filepath.isFile() ) { // if it is a FILE, send it
@@ -134,6 +135,27 @@ public class Test1 {
 				else if (filepath.isDirectory() ) {// if it is a DIRECTORY, send index.htm or show the current dir
 					//sendDirectory
 					//first check index.htm, if not , build some shit
+					File indexHTML;
+					
+					System.out.println("filepath = " + filepath);
+					indexHTML =searchForIndexHTML(filepath);
+					String extension="";
+					
+					try {
+						extension = getMimeExtension(".html");
+					}catch (Exception Ex1) {
+						System.out.println("Sth happened with getMimeExtension on filepath.isdirectory");
+					}
+					
+					if (indexHTML != null) {//if index exists , call sendFile for it
+						// 		text/html
+						sendFile( versionOfHttp, out,  filepath,  extension,  data);
+					}
+					else {//else, sendDirectory
+					
+						//to create sendDirectory method
+						
+					}
 				}
 			}
 		}
@@ -372,7 +394,8 @@ public class Test1 {
         for ( File file : filepath.listFiles() )//enhanced iteration through list of files
         {
             if ( file.isFile()) {
-				if (( file.getName().equals( "index.html" )) || ( file.getName().equals( "index.htm" ) ) ){
+				//check .htm also(if it is named such due to convention)
+				if (( file.getName().equals( "index.html" )) || ( file.getName().equals( "index.htm" ) ) ){ 
 					return file; //return index.htm
 				}
 			}
