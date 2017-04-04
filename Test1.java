@@ -11,6 +11,9 @@ public class Test1 {
 		//Port Number to Connect
 		int portNumber = 8000;
 
+		String codeStatus;
+		//PrintWriter out; //needs initialisation if we will create it here
+		
 		try{ 
 		
 			//Creation of serverSocket and clientSocket
@@ -38,7 +41,7 @@ public class Test1 {
 				
 			}*/
 			String [] parts ;
-			String codeStatus;
+			//String codeStatus;
 			
 			
 			//Read GET REQUEST 
@@ -59,31 +62,46 @@ public class Test1 {
 			File filepath= new File (ROOT + parts[1]);
 			
 			
-			//Only GET Method is allowed.Otherwise,print ERROR 405
-			if(!parts[0].equals("GET")){
-				out.println("405 Method Not Allowed!");
+			/*
+			ERROR 405 Method Not allowed.
+			Only HTTP GET is supported in this code.
+			*/
+			if(!parts[0].equals("GET")){ 
+				codeStatus = "405";
+				responseForError(codeStatus,out);
+				/*out.println("405 Method Not Allowed!");
+				//kaneis analoga pramata gia to 405
+				*/
 			}
-			//If the file/dir doesn't exist, show ERROR 404
+			/*
+			ERROR 404 Not Found.
+			The file/directory you want does not exist.
+			*/
 			else if(!filepath.exists()){
+				codeStatus = "404";
+				responseForError(codeStatus,out);
+				/*
 				out.println("404 Not Found!");
 				out.println(ROOT + parts[1]);
-				codeStatus = "404";
 				System.out.println("before responseForError 404");
-				responseForError(codeStatus,out);
 				System.out.println("after responseForError 404");
-				//out.flush();
-				//while (true);
+				*/
 			}
+			/*
+			ERROR 400 Bad Request 
+			*/
 			else if((parts[2]== null ) ||															//&& parts[3]== null)
-					(!(parts[2].equals("HTTP/1.1")) && !(parts[2].equals("HTTP/1.0")))){
-				out.println("400 Bad Request!");
-				return;
+					( !(parts[2].equals("HTTP/1.1")) && !(parts[2].equals("HTTP/1.0")) ) ){
+				//out.println("400 Bad Request!");
+				codeStatus = "400";
+				responseForError(codeStatus,out);
+				//return;
 			}
 			else{
 				//200 ok
 				//send file, do it in method (?)
 				out.println("\r\n");
-				out.println("HTTP/1.1 200 OK");
+				out.println("HTTP/1.1 200 OK"); // must check if HTTP is version 1.1 or 1.0
 				out.println("Date: " + today);
 				out.println("Server: CE325 (Java based server)");
 				out.println("Last-Modified: " + filepath.lastModified());
@@ -115,8 +133,17 @@ public class Test1 {
 			}
 		}
 		catch (IOException e) {
-			System.out.println("500 Internal Server Error!");
+			/*
+			 ERROR 500 Internal Server Error
+			*/
+			codeStatus = "500";
+			ServerSocket serverSocket = new ServerSocket(portNumber); 
+			Socket clientSocket = serverSocket.accept();   
+			PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);           // needs to be created again because it isn't inside the try block
+			responseForError(codeStatus,out);
 			System.out.println(e.getMessage());
+			//System.out.println("500 Internal Server Error!");
+			
 		}
 	}
 	
@@ -177,6 +204,7 @@ public class Test1 {
         html.append( "</body>\r\n" );
         html.append( "</html>\r\n" );
 		//--------------------------------------------------------
+		
         
 		
 		//--------------------------------------------------------
@@ -187,12 +215,12 @@ public class Test1 {
         out.print( "Date: " + date + "\r\n" );
         out.print( "CE325 JAVA based Server" + "\r\n" );
 		//toString method returns a string representing the data in this sequence
-        out.print( "Content-length: " + html.toString().length() + "\r\n" ); 
+		out.print( "Content-length: " + html.toString().length() + "\r\n" ); 
         out.print( "Connection: close\r\n" );
         out.print( "Content-type: text/html\r\n\r\n" );
 		
 		//Then, show the HTML on screen
-        out.print( html.toString() );
+		out.print( html.toString() );
 		
 		//Flush the toilet before you leave.
         out.flush();
