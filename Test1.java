@@ -222,6 +222,8 @@ public class Test1 {
 			data.flush();
 		}
 		out.flush();
+		
+		//out.close();
 		//maybe out needs close(?)
 		
 		bytesFromFile.close(); //close file resource 
