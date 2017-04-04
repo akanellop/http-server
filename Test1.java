@@ -341,6 +341,12 @@ public class Test1 {
             return String.format( "%.1f Bytes", bytes );
     }
 	
+	/*
+	getMimeExtension(String extensionForMime) takes a file suffix 
+	as an input and returns the appropriate Content-Type for HTTP as a String
+	For example : .pdf should correspond to application/pdf 
+	With this way, our Server can serve files without errors.
+	*/
 	public static String getMimeExtension(String extensionForMime) throws Exception { //File filepath
 		Properties mimeMap = new Properties();
 		String extensionForUse;
@@ -355,4 +361,23 @@ public class Test1 {
 		
 		return extensionForUse;
 	}
+	
+	
+	/*
+	searchForIndexHTML takes a File filepath as input
+	and returns the index.htm(l), if there is any, in this directory.
+	Otherwise, it returns null.
+	*/
+	public static File searchForIndexHTML( File filepath ){
+        for ( File file : filepath.listFiles() )//enhanced iteration through list of files
+        {
+            if ( file.isFile()) {
+				if (( file.getName().equals( "index.html" )) || ( file.getName().equals( "index.htm" ) ) ){
+					return file; //return index.htm
+				}
+			}
+        }
+		//else
+        return null;
+    }
 }
