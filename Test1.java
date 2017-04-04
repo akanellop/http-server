@@ -49,7 +49,7 @@ public class Test1 {
 			parts = inputLine.split(" "); 
 			
 			
-			//decode url, might not be needed
+			//decode url if it has spaces
 			if (parts[1].matches("(.*)%20(.*)")){
 				parts[1]=parts[1].replaceAll("%20", " ");
 			}
