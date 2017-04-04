@@ -25,29 +25,38 @@ public class Test1 {
 			String inputLine, readFile;
 			
 			//Our files for the WebServer exist inside this folder
-			String root = "C:\\root\\"; 
+			String ROOT = "C:\\root\\"; 
 
 			Date today = new Date();
 	
-		
+			//kalliCode
 			/*while ((inputLine = in.readLine()) != null) {
 				
 				out.println(inputLine);
 				
 				System.out.println("echoing: "+inputLine);
+				
 			}*/
-		
+			String [] parts ;
+			String codeStatus;
+			
+			
 			//Read GET REQUEST 
 			inputLine = in.readLine();
-			String [] parts = inputLine.split(" "); 
+			parts = inputLine.split(" "); 
+			
 			
 			//decode url, might not be needed
 			if (parts[1].matches("(.*)%20(.*)")){
 				parts[1]=parts[1].replaceAll("%20", " ");
 			}
+			
+			// remove "/" character of C:\root\/
+			parts[1] = parts[1].substring(1); 
+			
 		
 			//Create Filepath
-			File filepath= new File (root + parts[1]);
+			File filepath= new File (ROOT + parts[1]);
 			
 			
 			//Only GET Method is allowed.Otherwise,print ERROR 405
@@ -57,13 +66,22 @@ public class Test1 {
 			//If the file/dir doesn't exist, show ERROR 404
 			else if(!filepath.exists()){
 				out.println("404 Not Found!");
-				out.println(root + parts[1]);
+				out.println(ROOT + parts[1]);
+				codeStatus = "404";
+				System.out.println("before responseForError 404");
+				responseForError(codeStatus,out);
+				System.out.println("after responseForError 404");
+				//out.flush();
+				//while (true);
 			}
 			else if((parts[2]== null ) ||															//&& parts[3]== null)
 					(!(parts[2].equals("HTTP/1.1")) && !(parts[2].equals("HTTP/1.0")))){
 				out.println("400 Bad Request!");
+				return;
 			}
 			else{
+				//200 ok
+				//send file, do it in method (?)
 				out.println("\r\n");
 				out.println("HTTP/1.1 200 OK");
 				out.println("Date: " + today);
@@ -108,7 +126,7 @@ public class Test1 {
 	It builds the HTML page we want to show in case of an error.
 	It sends the HTTP response first and then shows the HTML page which was built.
 	*/
-	public void responseForError(String codeStatus, PrintWriter out) {
+	private static void responseForError(String codeStatus, PrintWriter out) {
 		String title, body;
 
 		
@@ -147,7 +165,7 @@ public class Test1 {
         html.append( "<head>\r\n" );
 		
 		//Styling(copy paste)
-        html.append( "<style> .size, .date {padding: 0 32px} h1.header {color: red; vertical-align: middle;}</style>\r\n" );
+       // html.append( "<style> .size, .date {padding: 0 32px} h1.header {color: red; vertical-align: middle;}</style>\r\n" );
 		
 		//Title and Body we chose earlier
         html.append( "<title>" + title + "</title>\r\n" );
@@ -178,6 +196,9 @@ public class Test1 {
 		
 		//Flush the toilet before you leave.
         out.flush();
+		
+		//PrintWriter 'out' needs close in order to be saved after flushed.
+		out.close();
 		//--------------------------------------------------------
 		
 	}
