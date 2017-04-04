@@ -33,23 +33,13 @@ public class Test1 {
 
 			Date today = new Date();
 	
-			//kalliCode
-			/*while ((inputLine = in.readLine()) != null) {
-				
-				out.println(inputLine);
-				
-				System.out.println("echoing: "+inputLine);
-				
-			}*/
 			String [] parts ;
 			String versionOfHttp= "", extensionForMime="";
 			//String codeStatus;
 			
-			
 			//Read GET REQUEST 
 			inputLine = in.readLine();
 			parts = inputLine.split(" "); 
-			
 			
 			//decode url if it has spaces
 			if (parts[1].matches("(.*)%20(.*)")){
@@ -58,7 +48,6 @@ public class Test1 {
 			
 			// remove "/" character of C:\root\/
 			parts[1] = parts[1].substring(1); 
-			
 			
 			//Get versionOfHttp
 			if  (parts[2].equals("HTTP/1.1") ) {
@@ -70,7 +59,6 @@ public class Test1 {
 			
 			//Create Filepath
 			File filepath= new File (ROOT + parts[1]);
-			
 			
 			//if you load winehouse.mp3
 			//String fileName = parts[1].getName();
@@ -126,7 +114,6 @@ public class Test1 {
 				
 				//Create an OutputStream so we can send data/bytes there for the client
 				OutputStream data = new BufferedOutputStream( clientSocket.getOutputStream());
-				
 				
 				/*
 				extensionForMime will now get updated to the value we need
