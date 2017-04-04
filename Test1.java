@@ -7,7 +7,7 @@ import java.nio.file.Files;
 
 public class Test1 {
 	public static String SERVERNAME = "CE325 (Java based server)";
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, BindException{
     
 		//Port Number to Connect
 		int portNumber = 8000;
@@ -42,7 +42,7 @@ public class Test1 {
 				
 			}*/
 			String [] parts ;
-			String versionOfHttp;
+			String versionOfHttp= "", extensionForMime;
 			//String codeStatus;
 			
 			
@@ -111,30 +111,42 @@ public class Test1 {
 				//200 ok
 				//send file, do it in method (?)
 				codeStatus = "200";
-				if (filepath.isFile() ) {
-					//sendFile(String codeStatus, String versionOfHttp,PrintWriter out, File filepath, String extension, OutputStream data);
+				
+				//Create an OutputStream so we can send data/bytes there for the client
+				OutputStream data = new BufferedOutputStream( clientSocket.getOutputStream());
+				
+				extensionForMime = "";
+				
+				if (filepath.isFile() ) { // if it is a FILE, send it
+					//sendFile( String versionOfHttp,PrintWriter out, File filepath, String extensionForMime, OutputStream data);
+					sendFile( versionOfHttp, out,  filepath,  extensionForMime,  data);
 				}
-				else if (filepath.isDirectory() ) {
+				else if (filepath.isDirectory() ) {// if it is a DIRECTORY, send index.htm or show the current dir
 					//sendDirectory
 					//first check index.htm, if not , build some shit
 				}
 				
+				/*
 				//code below should go inside sendFile
 				out.println("\r\n");
-				out.println("HTTP/1.1 200 OK"); // must check if HTTP is version 1.1 or 1.0
+				out.println(versionOfHttp+" 200 OK"); // must check if HTTP is version 1.1 or 1.0
 				out.println("Date: " + today);
 				out.println("Server: "+SERVERNAME);//
 				out.println("Last-Modified: " + filepath.lastModified());
 				out.println("Content-Length: " + filepath.length());
 				out.println("Connection: ");
-				out.println("Content-Type: " + Files.probeContentType(filepath.toPath()) + "\r\n");
+				out.println("Content-Type: " + Files.probeContentType(filepath.toPath()) + "\r\n"); //mime probably 
 				out.println("\r\n");
 				
 				BufferedReader inputStream = new BufferedReader(new FileReader(filepath));
-				/*while ((readFile = inputStream.readLine()) != null) {
+				/*
+				while ((readFile = inputStream.readLine()) != null) {
 					out.println(readFile);
 					out.flush();
-				}*/
+				}
+				*/
+				
+				/*
 			
 				OutputStream data = new BufferedOutputStream( clientSocket.getOutputStream());
 				int count;
@@ -150,6 +162,7 @@ public class Test1 {
 					data.flush();
 				}
 				out.flush();
+				*/
 			}
 		}
 		catch (IOException e) {
@@ -165,6 +178,68 @@ public class Test1 {
 			//System.out.println("500 Internal Server Error!");
 			
 		}
+	}
+	
+	public static void sendFile( String versionOfHttp, PrintWriter out, File filepath, String extensionForMime, OutputStream data ) throws IOException{
+		
+		
+		Date date = new Date();
+		
+		//Build HTTP RESPONSE 
+		//---------------------------------------------------------------------
+		//might need "\r" in the end of the lines
+		out.println("\r\n");
+		out.println(versionOfHttp + " 200 OK"); 
+		out.println("Date: " + date);
+		out.println("Server: "+ SERVERNAME);//
+		out.println("Last-Modified: " + getLastModifiedDate(filepath.lastModified() )  );
+		out.println("Content-Length: " + filepath.length());
+		out.println("Connection: close ");
+		
+		
+		//mime probably , String extensionForMime (?(
+		//Replace this line with getMime shit 
+		out.println("Content-Type: " + Files.probeContentType(filepath.toPath()) + "\r\n");
+		
+		
+		out.println("\r\n");
+			
+		//Save HTTP Response 
+		out.flush();
+		
+		//--------------------
+			
+		//BufferedReader inputStream = new BufferedReader(new FileReader(filepath));
+		/* //this works for only printing texts
+		while ((readFile = inputStream.readLine()) != null) {
+			out.println(readFile);
+			out.flush();
+		}
+		*/
+			
+		//OutputStream data = new BufferedOutputStream( clientSocket.getOutputStream());
+		
+		
+		//Send Data to client through a 8 KiloBytes Buffer
+		int count;
+		byte[] buffer = new byte[ 8192 ];
+		
+		
+		//Create a FileInputStream from the file  
+		FileInputStream bytesFromFile = new FileInputStream( filepath.getPath() );
+
+		//Reads up to 8 KBs of data from this input stream into an array of bytes called "count"
+		//it returns -1 if EOF
+		while ( (( count = bytesFromFile.read(buffer) )  != -1) ) {
+					
+			//Writes the data to our OutputStream
+			data.write( buffer );
+			data.flush();
+		}
+		out.flush();
+		//maybe out needs close(?)
+		
+		bytesFromFile.close(); //close file resource 
 	}
 	
 	/*
@@ -256,7 +331,7 @@ public class Test1 {
 	It returns the Date the file was last modified 
 	as a String in a format we want.
 	*/
-	public String getLastModifiedDate( long timeDate )
+	public static String getLastModifiedDate( long timeDate )
     {
         String dateFormat = "EEE, d MMM YYYY HH:mm:ss z";
         SimpleDateFormat sdf = new SimpleDateFormat( dateFormat );
@@ -269,7 +344,7 @@ public class Test1 {
 	getFileSize(File file) gets a file as input and returns 
 	its size in a String in corresponding bytes size.
 	*/
-    public String getFileSize( File file )
+    public static String getFileSize( File file )
     {
         double bytes = file.length();
         double kilobytes = ( bytes / 1024);
