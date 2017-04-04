@@ -101,6 +101,16 @@ public class Test1 {
 			else{
 				//200 ok
 				//send file, do it in method (?)
+				codeStatus = "200";
+				if (filepath.isFile() ) {
+					//sendFile
+				}
+				else if (filepath.isDirectory() ) {
+					//sendDirectory
+					//first check index.htm, if not , build some shit
+				}
+				
+				//code below should go inside sendFile
 				out.println("\r\n");
 				out.println("HTTP/1.1 200 OK"); // must check if HTTP is version 1.1 or 1.0
 				out.println("Date: " + today);
