@@ -173,21 +173,27 @@ public class Test1 {
 		//Build HTTP RESPONSE 
 		//---------------------------------------------------------------------
 		//might need "\r" in the end of the lines
-		out.println("\r\n");
-		out.println(versionOfHttp + " 200 OK"); 
-		out.println("Date: " + date);
-		out.println("Server: "+ SERVERNAME);//
-		out.println("Last-Modified: " + getLastModifiedDate(filepath.lastModified() )  );
-		out.println("Content-Length: " + filepath.length());
-		out.println("Connection: close ");
+		
+		out.print(versionOfHttp + " 200 OK"); 
+		out.print("\r\n");
+		out.print("Date: " + date);
+		out.print("\r\n");
+		out.print("Server: "+ SERVERNAME);//
+		out.print("\r\n");
+		out.print("Last-Modified: " + getLastModifiedDate(filepath.lastModified() )  );
+		out.print("\r\n");
+		out.print("Content-Length: " + filepath.length());
+		out.print("\r\n");
+		out.print("Connection: close ");
+		out.print("\r\n");
 		
 		
 		//mime probably , String extensionForMime (?(
 		//Replace this line with getMime shit 
-		//out.println("Content-Type: " + Files.probeContentType(filepath.toPath()) + "\r\n");
-		out.println("Content-Type: " + extensionForMime + "\r\n");
-		
-		out.println("\r\n");
+		//out.print("Content-Type: " + Files.probeContentType(filepath.toPath()) + "\r\n");
+		out.print("Content-Type: " + extensionForMime + "\r\n");
+		out.print("\r\n");
+		//out.print("\r\n");
 			
 		//Save HTTP Response 
 		out.flush();
