@@ -42,7 +42,7 @@ public class Test1 {
 				
 			}*/
 			String [] parts ;
-			String versionOfHttp= "", extensionForMime;
+			String versionOfHttp= "", extensionForMime="";
 			//String codeStatus;
 			
 			
@@ -71,6 +71,18 @@ public class Test1 {
 			//Create Filepath
 			File filepath= new File (ROOT + parts[1]);
 			
+			
+			//if you load winehouse.mp3
+			//String fileName = parts[1].getName();
+			//then, extension will be .mp3 
+			try{
+				int index = parts[1].lastIndexOf('.');
+				extensionForMime= parts[1].substring(index);
+			}catch (Exception Ex){
+				System.out.println("Error when getting suffix from file");
+			}
+			System.out.println("extensionForMime is " +extensionForMime);
+			//use this for Mapping
 			
 			/*
 			ERROR 405 Method Not allowed.
@@ -115,7 +127,18 @@ public class Test1 {
 				//Create an OutputStream so we can send data/bytes there for the client
 				OutputStream data = new BufferedOutputStream( clientSocket.getOutputStream());
 				
-				extensionForMime = "";
+				
+				/*
+				extensionForMime will now get updated to the value we need
+				For example, .txt=text/plain
+				
+				*/
+				try {
+					extensionForMime = getMimeExtension(extensionForMime);
+				}catch(Exception Exxxx){
+					System.out.println("error before going to sendFile or sendDirectory");
+				}
+				System.out.println("extensionForMime is : " + extensionForMime); 
 				
 				if (filepath.isFile() ) { // if it is a FILE, send it
 					//sendFile( String versionOfHttp,PrintWriter out, File filepath, String extensionForMime, OutputStream data);
@@ -125,44 +148,6 @@ public class Test1 {
 					//sendDirectory
 					//first check index.htm, if not , build some shit
 				}
-				
-				/*
-				//code below should go inside sendFile
-				out.println("\r\n");
-				out.println(versionOfHttp+" 200 OK"); // must check if HTTP is version 1.1 or 1.0
-				out.println("Date: " + today);
-				out.println("Server: "+SERVERNAME);//
-				out.println("Last-Modified: " + filepath.lastModified());
-				out.println("Content-Length: " + filepath.length());
-				out.println("Connection: ");
-				out.println("Content-Type: " + Files.probeContentType(filepath.toPath()) + "\r\n"); //mime probably 
-				out.println("\r\n");
-				
-				BufferedReader inputStream = new BufferedReader(new FileReader(filepath));
-				/*
-				while ((readFile = inputStream.readLine()) != null) {
-					out.println(readFile);
-					out.flush();
-				}
-				*/
-				
-				/*
-			
-				OutputStream data = new BufferedOutputStream( clientSocket.getOutputStream());
-				int count;
-				byte[] buffer = new byte[ 8192 ];
-				FileInputStream myInput = new FileInputStream( filepath.getPath() );
-
-				while ( ( ( count = myInput.read( buffer ) ) != -1 ) )
-				{
-					
-					//out.write(buffer);
-					//out.flush();
-					data.write( buffer );
-					data.flush();
-				}
-				out.flush();
-				*/
 			}
 		}
 		catch (IOException e) {
@@ -199,8 +184,8 @@ public class Test1 {
 		
 		//mime probably , String extensionForMime (?(
 		//Replace this line with getMime shit 
-		out.println("Content-Type: " + Files.probeContentType(filepath.toPath()) + "\r\n");
-		
+		//out.println("Content-Type: " + Files.probeContentType(filepath.toPath()) + "\r\n");
+		out.println("Content-Type: " + extensionForMime + "\r\n");
 		
 		out.println("\r\n");
 			
@@ -306,7 +291,7 @@ public class Test1 {
 		//HTTP RESPONSE
 		//Write to PrintWriter "out" the HTTP Response
 		Date date = new Date();
-		out.print( "HTTP/1.1 " + codeStatus + "\r\n" );
+		out.print( "HTTP/1.1 " + codeStatus + "\r\n" ); //
         out.print( "Date: " + date + "\r\n" );
         out.print( SERVERNAME + "\r\n" );
 		//toString method returns a string representing the data in this sequence
@@ -360,4 +345,19 @@ public class Test1 {
         else
             return String.format( "%.1f Bytes", bytes );
     }
+	
+	public static String getMimeExtension(String extensionForMime) throws Exception { //File filepath
+		Properties mimeMap = new Properties();
+		String extensionForUse;
+		FileInputStream mime_types;
+		
+		//Create a FileInputStream from the mime-types .txt file
+		mime_types = new FileInputStream( "mime-types.txt" );
+		//load it to the "mimeMap" Properties Object 
+		mimeMap.load(mime_types);
+		//get its appropriate Content-Type and return it
+		extensionForUse = mimeMap.getProperty(extensionForMime);
+		
+		return extensionForUse;
+	}
 }
