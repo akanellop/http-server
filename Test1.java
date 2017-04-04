@@ -6,6 +6,7 @@ import java.text.*;
 import java.nio.file.Files;
 
 public class Test1 {
+	public static String SERVERNAME = "CE325 (Java based server)";
 	public static void main(String[] args) throws IOException {
     
 		//Port Number to Connect
@@ -103,7 +104,7 @@ public class Test1 {
 				out.println("\r\n");
 				out.println("HTTP/1.1 200 OK"); // must check if HTTP is version 1.1 or 1.0
 				out.println("Date: " + today);
-				out.println("Server: CE325 (Java based server)");
+				out.println("Server: "+SERVERNAME);//
 				out.println("Last-Modified: " + filepath.lastModified());
 				out.println("Content-Length: " + filepath.length());
 				out.println("Connection: ");
@@ -213,7 +214,7 @@ public class Test1 {
 		Date date = new Date();
 		out.print( "HTTP/1.1 " + codeStatus + "\r\n" );
         out.print( "Date: " + date + "\r\n" );
-        out.print( "CE325 (Java based Server)" + "\r\n" );
+        out.print( SERVERNAME + "\r\n" );
 		//toString method returns a string representing the data in this sequence
 		out.print( "Content-length: " + html.toString().length() + "\r\n" ); 
         out.print( "Connection: close\r\n" );
