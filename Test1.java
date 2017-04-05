@@ -35,7 +35,7 @@ public class Test1 {
 			ROOT = "C:\\root\\"; 
 			ROOTPATH= new File (ROOT);
 			
-			Date today = new Date();
+			//Date today = new Date();  to erase
 	
 			String [] parts ;
 			String versionOfHttp= "", extensionForMime="";
@@ -44,6 +44,17 @@ public class Test1 {
 			//Read GET REQUEST 
 			inputLine = in.readLine();
 			parts = inputLine.split(" "); 
+			
+			
+			
+			
+			
+			/*print GET*/
+			System.out.println(inputLine);
+			
+			
+			
+			
 			
 			//decode url if it has spaces
 			if (parts[1].matches("(.*)%20(.*)")){
@@ -71,9 +82,9 @@ public class Test1 {
 				int index = parts[1].lastIndexOf('.');
 				extensionForMime= parts[1].substring(index);
 			}catch (Exception Ex){
-				System.out.println("Error when getting suffix from file");
+				//System.out.println("Error when getting suffix from file");
 			}
-			System.out.println("extensionForMime is " +extensionForMime);
+			//System.out.println("extensionForMime is " +extensionForMime);
 			//use this for Mapping
 			
 			/*
@@ -130,7 +141,7 @@ public class Test1 {
 					System.out.println("error before going to sendFile or sendDirectory");
 				}
 				//check
-				System.out.println("extensionForMime is : " + extensionForMime); 
+				//System.out.println("extensionForMime is : " + extensionForMime); 
 				
 				if (filepath.isFile() ) { // if it is a FILE, send it
 					//sendFile( String versionOfHttp,PrintWriter out, File filepath, String extensionForMime, OutputStream data);
@@ -153,10 +164,10 @@ public class Test1 {
 					
 					if (indexHTML != null) {//if index exists , call sendFile for it
 						// 		text/html
-						sendFile( versionOfHttp, out,  filepath,  extension,  data);
+						sendFile( versionOfHttp, out,  indexHTML,  extension,  data);
 					}
 					else {//else, sendDirectory
-					
+						sendDirectory(filepath,out);
 						//to create sendDirectory method
 						
 					}
@@ -238,7 +249,8 @@ public class Test1 {
 	/*
 	
 	*/
-	public void sendDirectory(File filepath, PrintWriter out) {
+	public static void sendDirectory(File filepath, PrintWriter out) {
+		
 		
 		//--------------------------------------------------------
 		//Create a StringBuilder object, called "html", in which we build the html(you don't say!)
@@ -267,15 +279,16 @@ public class Test1 {
 		
 		
 		//if it's not root , then show BACK button
-		if (!filepath.equals(ROOT)) {
+		if (!filepath.equals(ROOTPATH)) {
 			int index = ROOTPATH.getPath().length();
 			String extension="";
 			
 			//we will use substring(index) so we refer to the public path of the server
-			
+		
 			if (filepath.getParent().substring(index).equals("") ) {
 				extension="/"; //make sure in the end we always have '/' character 
 			}
+			
 			
 			// For example: For /dir1/dir2, BACK BUTTON will redirect you to /dir1 
 			extension = extension + filepath.getParent().substring(index);
