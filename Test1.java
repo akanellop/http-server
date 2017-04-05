@@ -275,7 +275,7 @@ public class Test1 {
         html.append( "<table>\r\n" );
 		
 		//different columns for Name/Size/LastModified
-        html.append( "<tr><th></th><th>Name</th><th>Size</th><th>Last Modified</th>\r\n" );
+        html.append( "<tr><th>Name   </th><th>Size     </th><th>Last Modified     </th></tr>\r\n" );
 		
 		
 		//if it's not root , then show BACK button
@@ -294,10 +294,29 @@ public class Test1 {
 			extension = extension + filepath.getParent().substring(index);
 			
 			//build back button to html 
-			html.append( "<td class=\"link\"><a href=\"" + extension + "\">" + "Parent Directory" + "</a></td>" );
+			html.append( "<tr><td class=\"link\"><a href=\"" + extension + "\">" + "Parent Directory" + "</a></td></tr>\r\n" );
+			System.out.println("extension is "+ extension);
 		}
 		
+		
 		//then show directory of listFiles +name +size+last modified 
+		//File [] pinakas;
+		int i=0;
+		for ( File file : filepath.listFiles() ){
+			i=i+1;
+			//System.out.println(file.getName());
+			//pinakas[i]=file;
+			html.append( "<tr><td class=\"link\"><a href=\"" + file.getName() + "\">" + file.getName() + "</a></td></tr>" );
+			
+		}
+			
+
+	
+		
+		
+		
+		
+		
 		
 		
 		//End of HTML
