@@ -7,6 +7,8 @@ import java.nio.file.Files;
 
 public class Test1 {
 	public static String SERVERNAME = "CE325 (Java based server)";
+	public static String ROOT ="";
+	public static File ROOTPATH;
 	
 	public static void main(String[] args) throws IOException, BindException{
     
@@ -30,8 +32,9 @@ public class Test1 {
 			String inputLine, readFile;
 			
 			//Our files for the WebServer exist inside this folder
-			String ROOT = "C:\\root\\"; 
-
+			ROOT = "C:\\root\\"; 
+			ROOTPATH= new File (ROOT);
+			
 			Date today = new Date();
 	
 			String [] parts ;
@@ -207,20 +210,7 @@ public class Test1 {
 			
 		//Save HTTP Response 
 		out.flush();
-		
-		//--------------------
 			
-		//BufferedReader inputStream = new BufferedReader(new FileReader(filepath));
-		/* //this works for only printing texts
-		while ((readFile = inputStream.readLine()) != null) {
-			out.println(readFile);
-			out.flush();
-		}
-		*/
-			
-		//OutputStream data = new BufferedOutputStream( clientSocket.getOutputStream());
-		
-		
 		//Send Data to client through a 8 KiloBytes Buffer
 		int count;
 		byte[] buffer = new byte[ 8192 ];
@@ -243,6 +233,81 @@ public class Test1 {
 		//maybe out needs close(?)
 		
 		bytesFromFile.close(); //close file resource 
+	}
+	
+	/*
+	
+	*/
+	public void sendDirectory(File filepath, PrintWriter out) {
+		
+		//--------------------------------------------------------
+		//Create a StringBuilder object, called "html", in which we build the html(you don't say!)
+		StringBuilder html = new StringBuilder();
+
+		//Start of HTML
+        html.append( "<html>\r\n" );
+        html.append( "<head>\r\n" );
+		
+		//Styling (switch to black?) 
+		html.append( "<style> .size, .date {padding: 0 30px} h1.header {color: red; vertical-align: middle;}</style>\r\n" );
+        
+		//Title 
+        html.append( "<title>" + SERVERNAME + "</title>\r\n" );
+		html.append( "<h1 class=\"header\"><img src=\"/icons/java.png\" /> +SERVERNAME</h1>\r\n" );
+		
+		//Current directory
+	    html.append( "<h1>Current Dir: " + ( filepath.equals(ROOTPATH) ? "/" : filepath.getName() ) + "</h1>\r\n" );
+		
+        html.append( "</head>\r\n" );
+        html.append( "<body>\r\n" );
+        html.append( "<table>\r\n" );
+		
+		//different columns for Name/Size/LastModified
+        html.append( "<tr><th></th><th>Name</th><th>Size</th><th>Last Modified</th>\r\n" );
+		
+		
+		//if it's not root , then show BACK button
+		if (!filepath.equals(ROOT)) {
+			int index = ROOTPATH.getPath().length();
+			String extension="";
+			
+			//we will use substring(index) so we refer to the public path of the server
+			
+			if (filepath.getParent().substring(index).equals("") ) {
+				extension="/"; //make sure in the end we always have '/' character 
+			}
+			
+			// For example: For /dir1/dir2, BACK BUTTON will redirect you to /dir1 
+			extension = extension + filepath.getParent().substring(index);
+			
+			//build back button to html 
+			html.append( "<td class=\"link\"><a href=\"" + extension + "\">" + "Parent Directory" + "</a></td>" );
+		}
+		
+		//then show directory of listFiles +name +size+last modified 
+		
+		
+		//End of HTML
+		html.append( "</table>\r\n" );
+        html.append( "</body>\r\n" );
+        html.append( "</html>\r\n" );
+
+		//Send HTTP RESPONSE
+		Date date = new Date();
+        out.print("HTTP/1.1 200 OK" + "\r\n");
+        out.print( "Date: " + date + "\r\n" );
+        out.print( SERVERNAME + "\r\n" );
+        out.print( "Content-length: " + html.toString().length() + "\r\n" );
+        out.print( "Connection: close\r\n" );
+        out.print( "Content-type: text/html\r\n\r\n" );
+		
+		//SEND HTML RESPONSE
+        out.print( html.toString() );
+		
+		//flush
+        out.flush();
+		//close(?)
+		//out.close();
 	}
 	
 	/*
@@ -404,4 +469,6 @@ public class Test1 {
 		//else
         return null;
     }
+	
+
 }
