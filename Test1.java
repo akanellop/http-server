@@ -46,16 +46,6 @@ public class Test1 {
 			parts = inputLine.split(" "); 
 			
 			
-			
-			
-			
-			/*print GET*/
-			System.out.println(inputLine);
-			
-			
-			
-			
-			
 			//decode url if it has spaces
 			if (parts[1].matches("(.*)%20(.*)")){
 				parts[1]=parts[1].replaceAll("%20", " ");
@@ -259,40 +249,27 @@ public class Test1 {
 		//Start of HTML
         html.append( "<html>\r\n" );
         html.append( "<head>\r\n" );
-		
-		//Styling (switch to black?) 
-		html.append( "<style> .size, .date {padding: 0 30px} h1.header {color: red; vertical-align: middle;}</style>\r\n" );
-        
 		//Title 
         html.append( "<title>" + SERVERNAME + "</title>\r\n" );
-		html.append( "<h1 class=\"header\"><img src=\"/icons/java.png\" /> +SERVERNAME</h1>\r\n" );
-		
-		//Current directory
-	    html.append( "<h1>Current Dir: " + ( filepath.equals(ROOTPATH) ? "/" : filepath.getName() ) + "</h1>\r\n" );
-		
         html.append( "</head>\r\n" );
         html.append( "<body>\r\n" );
-        html.append( "<table>\r\n" );
-		
+		//name the current directory
+		html.append( "<h1>Index of " + (filepath.equals(ROOTPATH) ? "/" : filepath.getName() )+"</h1>\r\n" );
+	    html.append( "<table>\r\n" );
 		//different columns for Name/Size/LastModified
-        html.append( "<tr><th>Name   </th><th>Size     </th><th>Last Modified     </th></tr>\r\n" );
-		
+        html.append( "<tr><h3><th valign=\"left\"> Name</th><th > Size </th><th>Last Modified </th></h3></tr>\r\n" );
+		html.append( "<tr><th colspan=\"5\"><hr></th></tr>\r\n" );
 		
 		//if it's not root , then show BACK button
 		if (!filepath.equals(ROOTPATH)) {
 			int index = ROOTPATH.getPath().length();
 			String extension="";
-			
 			//we will use substring(index) so we refer to the public path of the server
-		
 			if (filepath.getParent().substring(index).equals("") ) {
 				extension="/"; //make sure in the end we always have '/' character 
 			}
-			
-			
 			// For example: For /dir1/dir2, BACK BUTTON will redirect you to /dir1 
 			extension = extension + filepath.getParent().substring(index);
-			
 			//build back button to html 
 			html.append( "<tr><td class=\"link\"><a href=\"" + extension + "\">" + "Parent Directory" + "</a></td></tr>\r\n" );
 			System.out.println("extension is "+ extension);
@@ -300,24 +277,23 @@ public class Test1 {
 		
 		
 		//then show directory of listFiles +name +size+last modified 
-		//File [] pinakas;
-		int i=0;
+		
+		
+		/* - den amoigei eikona eno anoigei me idio tropo sto html (?), apo ti sinartisi imageFor sigoyro mono to switch
+		  -to lastmodified thelei format to opoio na apokodikopoeitai apo browser (modified me sinartisi leyteri kai perasma se neo string (?)
+			-prepi na ftiaoxyme while (true na lamavaei sinexomena gets.. monos tropos gai elegxo ton clicks
+		
+		*/
 		for ( File file : filepath.listFiles() ){
-			i=i+1;
-			//System.out.println(file.getName());
-			//pinakas[i]=file;
-			html.append( "<tr><td class=\"link\"><a href=\"" + file.getName() + "\">" + file.getName() + "</a></td></tr>" );
 			
+			html.append( "<tr><td valign=\"top\"><img src=\"icons/"+imageFor(file)+" \" alt=\"[TYPE}\" ></td>" );	
+			html.append( "<td valign=\"top\"><a href=\""+file+"\">"+file.getName()+"</a></td> ");
+			html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
+			html.append( "<td valign=\"top\">"+file.lastModified()+"</td> </tr>\r\n ");
 		}
 			
 
-	
-		
-		
-		
-		
-		
-		
+		html.append( "<tr><th colspan=\"5\"><hr></th></tr>\r\n");
 		
 		//End of HTML
 		html.append( "</table>\r\n" );
@@ -483,7 +459,7 @@ public class Test1 {
 	}
 	
 	
-	/*
+	/*s
 	searchForIndexHTML takes a File filepath as input
 	and returns the index.htm(l), if there is any, in this directory.
 	Otherwise, it returns null.
@@ -502,5 +478,97 @@ public class Test1 {
         return null;
     }
 	
-
+	public static String imageFor(File f){
+		//String test="icons\\doc.png";
+		//return test;
+	  String icon = "";
+	  String ext="";
+	  try{
+		  int index = f.getName().lastIndexOf('.');
+		  ext=  f.getName().substring(index);
+		  ext = getMimeExtension(ext); //including dot (.)
+      }
+	  catch(Exception e){}
+	  
+	  switch(ext) {
+        /* doc */
+        case ".doc":
+        case ".docx":
+        case ".odt":
+          icon += "doc.png";
+          break;
+        /* xls */
+        case ".xls":
+        case ".xlsx":
+        case ".ods":
+          icon += "xls.png";
+          break;
+        /* ppt */
+        case ".ppt":
+        case ".pptx":
+        case ".odp":
+          icon += "ppt.png";
+          break;
+        /* pdf */
+        case ".pdf":
+        case ".ps":
+          icon += "pdf.png";
+          break;
+        /* images */
+        case ".png":
+        case ".jpg":
+        case ".jpeg":
+        case ".bmp":
+        case ".tiff":
+        case ".svg":
+        case ".pgm":
+        case ".ppm":
+        case ".pbm":
+          icon += "img.png";
+          break;
+        /* video */  
+        case ".mp4":
+        case ".flv":
+        case ".mkv":
+        case ".ogv":
+        case ".avi":
+        case ".mov":
+        case ".qt":
+          icon += "video.png";
+          break;
+        /* audio */  
+        case ".wav":
+        case ".mp3":
+        case ".ogg":
+        case ".cda":
+        case ".flac":
+        case ".snd":
+        case ".aa":
+        case ".mka":
+        case ".wma":
+        case ".m4p":
+        case ".mp4a":
+        case ".mpa":      
+          icon += "audio.png";
+          break;
+        /* html */
+        case ".html":
+        case ".htm":
+          icon += "html.png";
+          break;
+        /* xml */
+        case ".xml":
+          icon += "xml.png";
+          break;
+        /* rss */
+        case ".rss":
+          icon += "rss.png";
+          break;
+        default:
+          icon += "txt.png";      
+      }
+	  
+	  return icon;
+	  
+	}
 }
