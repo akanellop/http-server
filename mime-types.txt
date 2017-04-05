@@ -408,6 +408,7 @@ N/A=application/andrew-inset
 .m21=application/mp21
 .mp4a=audio/mp4
 .mp4=video/mp4
+.mp3=audio/mpeg
 .m3u8=application/vnd.apple.mpegurl
 .mus=application/vnd.musician
 .msty=application/vnd.muvee.style

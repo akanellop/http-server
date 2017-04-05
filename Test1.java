@@ -7,6 +7,7 @@ import java.nio.file.Files;
 
 public class Test1 {
 	public static String SERVERNAME = "CE325 (Java based server)";
+	
 	public static void main(String[] args) throws IOException, BindException{
     
 		//Port Number to Connect
@@ -164,7 +165,7 @@ public class Test1 {
 			 ERROR 500 Internal Server Error
 			*/
 			codeStatus = "500";
-			ServerSocket serverSocket = new ServerSocket(portNumber); 
+			ServerSocket serverSocket = new ServerSocket(portNumber+99); //
 			Socket clientSocket = serverSocket.accept();   
 			PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);           // needs to be created again because it isn't inside the try block
 			responseForError(codeStatus,out);
