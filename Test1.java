@@ -18,7 +18,10 @@ public class Test1 {
 		String codeStatus;
 		//PrintWriter out; //needs initialisation if we will create it here
 		
+		while (true )
+		{
 		try{ 
+		
 		
 			//Creation of serverSocket and clientSocket
 			ServerSocket serverSocket = new ServerSocket(portNumber); 
@@ -177,6 +180,7 @@ public class Test1 {
 			//System.out.println("500 Internal Server Error!");
 			
 		}
+		}
 	}
 	
 	public static void sendFile( String versionOfHttp, PrintWriter out, File filepath, String extensionForMime, OutputStream data ) throws IOException{
@@ -285,13 +289,16 @@ public class Test1 {
 		
 		*/
 		for ( File file : filepath.listFiles() ){
+			int index = ROOTPATH.getPath().length();
+			String extensionForLocalHost = file.getPath().substring(index);
+			System.out.println("extensionForLocalHost is " +extensionForLocalHost);
 			
-			html.append( "<tr><td valign=\"top\"><img src=\"icons/"+imageFor(file)+" \" alt=\"[TYPE}\" ></td>" );	
-			html.append( "<td valign=\"top\"><a href=\""+file+"\">"+file.getName()+"</a></td> ");
+			//html.append( "<tr><td valign=\"top\"><img src=\"icons/"+imageFor(file)+"\" alt=\"[TYPE}\" ></td>" );	
+			html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
 			html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
-			html.append( "<td valign=\"top\">"+file.lastModified()+"</td> </tr>\r\n ");
+			html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
 		}
-			
+	
 
 		html.append( "<tr><th colspan=\"5\"><hr></th></tr>\r\n");
 		
@@ -486,7 +493,9 @@ public class Test1 {
 	  try{
 		  int index = f.getName().lastIndexOf('.');
 		  ext=  f.getName().substring(index);
-		  ext = getMimeExtension(ext); //including dot (.)
+		  ext = ext.toLowerCase();
+		  //ext = getMimeExtension(ext); //including dot (.)
+		  System.out.println(f.getName() + " file has extension of " +ext );
       }
 	  catch(Exception e){}
 	  

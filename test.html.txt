@@ -1,8 +1,0 @@
-<html>
-<head> </head>
-<body>
-
-I AM A WIZZARD
-
-</body>
-</html>
