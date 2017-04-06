@@ -18,20 +18,21 @@ public class Test1 {
 		String codeStatus;
 		//PrintWriter out; //needs initialisation if we will create it here
 		
+		ServerSocket serverSocket = new ServerSocket(portNumber); 
+		Socket clientSocket = serverSocket.accept();   
+		BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); 
+		PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);           
+		
 		while (true )
 		{
 		try{ 
 		
 		
 			//Creation of serverSocket and clientSocket
-			ServerSocket serverSocket = new ServerSocket(portNumber); 
-			Socket clientSocket = serverSocket.accept();   
+			
 
 			//Input and Output Streams: in, out
-			PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);           
-			BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); 
-				
-
+			
 			String inputLine, readFile;
 			
 			//Our files for the WebServer exist inside this folder
@@ -40,32 +41,40 @@ public class Test1 {
 			
 			//Date today = new Date();  to erase
 	
-			String [] parts ;
+			String [] parts ;//={"Hello " , " Mf" , " World"};
 			String versionOfHttp= "", extensionForMime="";
 			//String codeStatus;
 			
 			//Read GET REQUEST 
+			
 			inputLine = in.readLine();
-			parts = inputLine.split(" "); 
+			System.out.println(inputLine);
+			//if (!inputLine.equals("") ){
+			parts = inputLine.split("\\s+"); 
+			//}
 			
-			
+			if (parts.length > 1 ) {
 			//decode url if it has spaces
-			if (parts[1].matches("(.*)%20(.*)")){
-				parts[1]=parts[1].replaceAll("%20", " ");
+				if (parts[1].matches("(.*)%20(.*)")){
+					parts[1]=parts[1].replaceAll("%20", " ");
+				}
+				
+				// remove "/" character of C:\root\/
+				parts[1] = parts[1].substring(1); 
 			}
-			
-			// remove "/" character of C:\root\/
-			parts[1] = parts[1].substring(1); 
-			
+			//System.out.println(parts[2]);
 			//Get versionOfHttp
-			if  (parts[2].equals("HTTP/1.1") ) {
-				versionOfHttp = parts[2];
-			}
-			else if (parts[2].equals("HTTP/1.0") ){
-				versionOfHttp = parts[2];
+			if (parts.length == 3){
+				if  (parts[2].equals("HTTP/1.1") ) {
+					versionOfHttp = parts[2];
+				}
+				else if (parts[2].equals("HTTP/1.0") ){
+					versionOfHttp = parts[2];
+				}
 			}
 			
 			//Create Filepath
+			
 			File filepath= new File (ROOT + parts[1]);
 			
 			//if you load winehouse.mp3
@@ -160,8 +169,12 @@ public class Test1 {
 						sendFile( versionOfHttp, out,  indexHTML,  extension,  data);
 					}
 					else {//else, sendDirectory
+					try {
 						sendDirectory(filepath,out);
-						//to create sendDirectory method
+					}
+					catch (Exception E){
+						System.out.println("exception happened");
+					}//to create sendDirectory method
 						
 					}
 				}
@@ -172,9 +185,9 @@ public class Test1 {
 			 ERROR 500 Internal Server Error
 			*/
 			codeStatus = "500";
-			ServerSocket serverSocket = new ServerSocket(portNumber+99); //
-			Socket clientSocket = serverSocket.accept();   
-			PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);           // needs to be created again because it isn't inside the try block
+			//ServerSocket serverSocket = new ServerSocket(portNumber+99); //
+			//Socket clientSocket = serverSocket.accept();   
+			//PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);           // needs to be created again because it isn't inside the try block
 			responseForError(codeStatus,out);
 			System.out.println(e.getMessage());
 			//System.out.println("500 Internal Server Error!");
@@ -243,7 +256,7 @@ public class Test1 {
 	/*
 	
 	*/
-	public static void sendDirectory(File filepath, PrintWriter out) {
+	public static void sendDirectory(File filepath, PrintWriter out) throws Exception{
 		
 		
 		//--------------------------------------------------------
@@ -288,12 +301,16 @@ public class Test1 {
 			-prepi na ftiaoxyme while (true na lamavaei sinexomena gets.. monos tropos gai elegxo ton clicks
 		
 		*/
+		
+		String iconspath = "C:\\icons\\";
+		String fPath = "";
+		
 		for ( File file : filepath.listFiles() ){
 			int index = ROOTPATH.getPath().length();
 			String extensionForLocalHost = file.getPath().substring(index);
-			System.out.println("extensionForLocalHost is " +extensionForLocalHost);
 			
-			//html.append( "<tr><td valign=\"top\"><img src=\"icons/"+imageFor(file)+"\" alt=\"[TYPE}\" ></td>" );	
+			
+			html.append( "<tr><td valign=\"top\"><img src=\\icons\\"+imageFor(file)+"\\" + " alt=\"[TYPE]\" ></td>" );	
 			html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
 			html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
 			html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
