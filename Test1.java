@@ -304,13 +304,18 @@ public class Test1 {
 		
 		String iconspath = "C:\\icons\\";
 		String fPath = "";
+		String rowLink;
 		
 		for ( File file : filepath.listFiles() ){
 			int index = ROOTPATH.getPath().length();
 			String extensionForLocalHost = file.getPath().substring(index);
 			
+					rowLink = "<td valign=\"top\"><img src=\"/icons/xml.png\"></td>";
+			//html.append( "<tr><td valign=\"top\"><img src=\"/icons/"+imageFor(file)+"\"></td>");
+			//html.append( "<tr><td valign=\"top\"><img src=\"/icons/xml.png\"></td>");
+			html.append(rowLink);
 			
-			html.append( "<tr><td valign=\"top\"><img src=\\icons\\"+imageFor(file)+"\\" + " alt=\"[TYPE]\" ></td>" );	
+					//rowLink = "<td valign=\"top\"><img src=\"/icons/dir.png\"></td><td valign=\"top\"><a href=" + f.getName() + "/>" + f.getName() + "/</a></td>";
 			html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
 			html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
 			html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
