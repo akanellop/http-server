@@ -31,18 +31,17 @@ public class test3 {
 		//while(true ){ //server running continuously
 			
 			//GET req from client
-			while(in.ready()){ //WHEN buffer has text you can read
-				inputLine = in.readLine();
-				if (inputLine != null){
-					request=request + inputLine+"\n";
-				}
-				else{break;}
+			inputLine = in.readLine();
+			if (inputLine != null){
+				request=request + inputLine+"\n";
 			}
-			
+			System.out.println("request from them all   \n"+request);
 			//sending GET req to make response
-			
-			responseToClient(request,out,data);
-			request="";
+			if((request!="" )&&(request!= null)){
+				System.out.println("request to send   \n"+request);
+				responseToClient(request,out,data);
+				request="";
+			}
 		}
 		
 	}
@@ -51,43 +50,42 @@ public class test3 {
 		//various declarations
 		String readFile;
 		String codeStatus;
-		String [] parts =null ;
+		String [] parts = null;
 		String versionOfHttp= "", extensionForMime="";
-		String Req=request;
 		//split the request so we can get first line (Get line) part by part to check errors
 		BufferedReader strRead = new BufferedReader(new StringReader(request));
 		String line="";
 		
 		
-			try{
+		try{
 				
-				line=strRead.readLine();
-				parts= line.split("\\s+");
-				System.out.println(line);
-				line="";
-				strRead.close();
-			}
-			catch(Exception e){}
+			line=strRead.readLine();
+			parts= line.split("\\s+");
+			System.out.println(line);
+			line="";
+			strRead.close();
+		}
+		catch(Exception e){}
 			
-			try{
-				//Getting information from the request
-				if (parts.length > 1 ){
-					if (parts[1].matches("(.*)%20(.*)")){   //fix the " " character in file's name 
-							parts[1]=parts[1].replaceAll("%20", " ");
-					}
-					parts[1] = parts[1].substring(1); 
+		try{
+			//Getting information from the request
+			if (parts.length > 1 ){
+				if (parts[1].matches("(.*)%20(.*)")){   //fix the " " character in file's name 
+					parts[1]=parts[1].replaceAll("%20", " ");
 				}
-				if (parts.length == 3){  //get http protocol
-					if  (parts[2].equals("HTTP/1.1") ) {
-						versionOfHttp = parts[2];
-					}
-					else if (parts[2].equals("HTTP/1.0") ){
-						versionOfHttp = parts[2];
-					}
+				parts[1] = parts[1].substring(1); 
+			}
+			if (parts.length == 3){  //get http protocol
+				if  (parts[2].equals("HTTP/1.1") ) {
+					versionOfHttp = parts[2];
 				}
+				else if (parts[2].equals("HTTP/1.0") ){
+					versionOfHttp = parts[2];
+				}
+			}
 				
-				//Creates file object for the currently asked object
-				File filepath= new File (ROOT + parts[1]);
+			//Creates file object for the currently asked object
+			File filepath= new File (ROOT + parts[1]);
 			
 			//if you load winehouse.mp3
 			//String fileName = parts[1].getName();
@@ -98,19 +96,19 @@ public class test3 {
 			}catch (Exception Ex){
 				//System.out.println("Error when getting suffix from file");
 			}
-			//System.out.println("extensionForMime is " +extensionForMime);
-			//use this for Mapping
-			
-			/*
-			ERROR 405 Method Not allowed.
-			Only HTTP GET is supported in this code.
-			*/
+				//System.out.println("extensionForMime is " +extensionForMime);
+				//use this for Mapping
+				
+				/*
+				ERROR 405 Method Not allowed.
+				Only HTTP GET is supported in this code.
+				*/
 			if(!parts[0].equals("GET")){ 
 				codeStatus = "405";
 				responseForError(codeStatus,out);
-				/*out.println("405 Method Not Allowed!");
-				//kaneis analoga pramata gia to 405
-				*/
+					/*out.println("405 Method Not Allowed!");
+					//kaneis analoga pramata gia to 405
+					*/
 			}
 			/*
 			ERROR 404 Not Found.
@@ -120,98 +118,91 @@ public class test3 {
 				codeStatus = "404";
 				responseForError(codeStatus,out);
 				/*
-				out.println("404 Not Found!");
-				out.println(ROOT + parts[1]);
-				System.out.println("before responseForError 404");
-				System.out.println("after responseForError 404");
-				*/
+					out.println("404 Not Found!");
+					out.println(ROOT + parts[1]);
+					System.out.println("before responseForError 404");
+					System.out.println("after responseForError 404");
+					*/
 			}
-			/*
-			ERROR 400 Bad Request 
-			*/
+				/*
+				ERROR 400 Bad Request 
+				*/
 			else if((parts[2]== null ) ||															//&& parts[3]== null)
 					( !(parts[2].equals("HTTP/1.1")) && !(parts[2].equals("HTTP/1.0")) ) ){
-				//out.println("400 Bad Request!");
+					//out.println("400 Bad Request!");
 				codeStatus = "400";
 				responseForError(codeStatus,out);
 				//return;
 			}
 			else{
-				//200 ok
-				//send file, do it in method (?)
+					//200 ok
+					//send file, do it in method (?)
 				codeStatus = "200";
-				
-				//Create an OutputStream so we can send data/bytes there for the client
-				//OutputStream data = new BufferedOutputStream( clientSocket.getOutputStream());
-				
+					
+					//Create an OutputStream so we can send data/bytes there for the client
+					//OutputStream data = new BufferedOutputStream( clientSocket.getOutputStream());
+					
 
 				try {
-					/*
-					extensionForMime will now get updated to the value we need
-					For example, .txt=text/plain
-					*/
+						/*
+						extensionForMime will now get updated to the value we need
+						For example, .txt=text/plain
+						*/
 					extensionForMime = getMimeExtension(extensionForMime);
 				}catch(Exception Exxxx){
 					System.out.println("error before going to sendFile or sendDirectory");
 				}
-				//check
-				//System.out.println("extensionForMime is : " + extensionForMime); 
-				
+					//check
+					//System.out.println("extensionForMime is : " + extensionForMime); 
+					
 				if (filepath.isFile() ) { // if it is a FILE, send it
-					//sendFile( String versionOfHttp,PrintWriter out, File filepath, String extensionForMime, OutputStream data);
+						//sendFile( String versionOfHttp,PrintWriter out, File filepath, String extensionForMime, OutputStream data);
 					sendFile( versionOfHttp, out,  filepath,  extensionForMime,  data);
 				}
 				else if (filepath.isDirectory() ) {// if it is a DIRECTORY, send index.htm or show the current dir
-					//sendDirectory
-					//first check index.htm, if not , build some shit
+						//sendDirectory
+						//first check index.htm, if not , build some shit
 					File indexHTML;
-					
+						
 					System.out.println("filepath = " + filepath);
 					indexHTML =searchForIndexHTML(filepath);
 					String extension="";
-					
+						
 					try {
 						extension = getMimeExtension(".html");
 					}catch (Exception Ex1) {
 						System.out.println("Sth happened with getMimeExtension on filepath.isdirectory");
 					}
-					
+						
 					if (indexHTML != null) {//if index exists , call sendFile for it
-						// 		text/html
+							// 		text/html
 						sendFile( versionOfHttp, out,  indexHTML,  extension,  data);
 					}
 					else {//else, sendDirectory
-					try {
-						sendDirectory(filepath,out);
-					}
-					catch (Exception E){
-						System.out.println("exception happened");
-					}//to create sendDirectory method
-						
+						try {
+							sendDirectory(filepath,out);
+						}
+						catch (Exception E){
+							System.out.println("exception happened");
+						}//to create sendDirectory method
+							
 					}
 				}
 			}
 		}
 		catch (IOException e) {
-			/*
-			 ERROR 500 Internal Server Error
-			*/
+				/*
+				 ERROR 500 Internal Server Error
+				*/
 			codeStatus = "500";
-			//ServerSocket serverSocket = new ServerSocket(portNumber+99); //
-			//Socket clientSocket = serverSocket.accept();   
-			//PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);           // needs to be created again because it isn't inside the try block
+				//ServerSocket serverSocket = new ServerSocket(portNumber+99); //
+				//Socket clientSocket = serverSocket.accept();   
+				//PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);           // needs to be created again because it isn't inside the try block
 			responseForError(codeStatus,out);
 			System.out.println(e.getMessage());
-			//System.out.println("500 Internal Server Error!");
-			
-		}
-			
-			
-			
-			
-			
-			
-			
+				//System.out.println("500 Internal Server Error!");
+				
+		}	
 	}
 	
 	
