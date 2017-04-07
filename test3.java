@@ -18,30 +18,50 @@ public class test3 {
 		//various declarations for test2
 		String request="",inputLine="";
 		
-		//creates socket's client and server and their streams
+		
+		//create a serverSocket
 		ServerSocket serverSocket = new ServerSocket(portNumber); 
-		while(true ){ 
-		Socket clientSocket = serverSocket.accept();   
-		BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); 
-		PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 		
-		//Create an OutputStream so we can send data/bytes there for the client
-		OutputStream data = new BufferedOutputStream( clientSocket.getOutputStream());
+		while(true ){ //run forever
 		
-		//while(true ){ //server running continuously
+			/*
+			create a socket(clientSocket) for the client, connect them to the Server and then create:
+			1 InputStream 	: BufferedReader in
+			2 OutputStreams : PrintWriter out ( for the HTTP Response) , OutputStream data( for file sending)
+			*/
+			Socket clientSocket = serverSocket.accept();   
+			BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); 
+			PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+			OutputStream data = new BufferedOutputStream( clientSocket.getOutputStream());
 			
-			//GET req from client
+			//while(true ){ //server running continuously
+				
+				//GET req from client
 			inputLine = in.readLine();
-			if (inputLine != null){
+			if ( inputLine != null ){
 				request=request + inputLine+"\n";
 			}
-			//sending GET req to make response
-			if((request!="" )&&(request!= null)){
+				
+			//System.out.println("Line 45:Request is " + request);
+				
+			/*	
+			Send (1st line of) GET REQUEST to send 
+			the appropriate response to our client
+			*/
+			if (  (request!="" )&&(request!= null)  ) {
+					
+				//System.out.println("Before responsetoClient, Line 49:Request is " + request);	
 				responseToClient(request,out,data);
 				request="";
+					
+				// Close the sockets for safe reasons, they will be created again either way!
+				clientSocket.close();
+				out.close();
+				data.close();
+				//
 			}
+			
 		}
-		
 	}
 	
 	private static void responseToClient(String request,PrintWriter out,OutputStream data){
@@ -254,7 +274,7 @@ public class test3 {
         html.append( "</html>\r\n" );
 		//--------------------------------------------------------
 		
-        
+        //########################inside responseForError method//########################
 		
 		//--------------------------------------------------------
 		//HTTP RESPONSE
@@ -275,7 +295,8 @@ public class test3 {
         out.flush();
 		
 		//PrintWriter 'out' needs close in order to be saved after flushed.
-		out.close();
+		//out.close();
+		//not sure for that
 		//--------------------------------------------------------
 		
 	}
@@ -318,6 +339,8 @@ public class test3 {
 		byte[] buffer = new byte[ 8192 ];
 		
 		
+		//########################inside sendFile method//########################
+		
 		//Create a FileInputStream from the file  
 		FileInputStream bytesFromFile = new FileInputStream( filepath.getPath() );
 
@@ -332,7 +355,7 @@ public class test3 {
 		out.flush();
 		
 		//out.close();
-		//maybe out needs close(?)
+		//do not know if out needs closing here
 		
 		bytesFromFile.close(); //close file resource 
 	}
@@ -412,6 +435,8 @@ public class test3 {
         html.append( "</body>\r\n" );
         html.append( "</html>\r\n" );
 
+		//########################inside sendDirectory method//########################
+		
 		//Send HTTP RESPONSE
 		Date date = new Date();
         out.print("HTTP/1.1 200 OK" + "\r\n");
@@ -428,7 +453,9 @@ public class test3 {
         out.flush();
 		//close(?)
 		//out.close();
+		//not sure for that
 	}
+	
 	/*
 	getMimeExtension(String extensionForMime) takes a file suffix 
 	as an input and returns the appropriate Content-Type for HTTP as a String
