@@ -35,10 +35,8 @@ public class test3 {
 			if (inputLine != null){
 				request=request + inputLine+"\n";
 			}
-			System.out.println("request from them all   \n"+request);
 			//sending GET req to make response
 			if((request!="" )&&(request!= null)){
-				System.out.println("request to send   \n"+request);
 				responseToClient(request,out,data);
 				request="";
 			}
@@ -56,12 +54,10 @@ public class test3 {
 		BufferedReader strRead = new BufferedReader(new StringReader(request));
 		String line="";
 		
-		
+		//get the first line of GET request,and split it word by word
 		try{
-				
 			line=strRead.readLine();
 			parts= line.split("\\s+");
-			System.out.println(line);
 			line="";
 			strRead.close();
 		}
@@ -73,6 +69,7 @@ public class test3 {
 				if (parts[1].matches("(.*)%20(.*)")){   //fix the " " character in file's name 
 					parts[1]=parts[1].replaceAll("%20", " ");
 				}
+				// remove "/" character of C:\root\/
 				parts[1] = parts[1].substring(1); 
 			}
 			if (parts.length == 3){  //get http protocol
@@ -164,7 +161,6 @@ public class test3 {
 						//first check index.htm, if not , build some shit
 					File indexHTML;
 						
-					System.out.println("filepath = " + filepath);
 					indexHTML =searchForIndexHTML(filepath);
 					String extension="";
 						
@@ -392,25 +388,17 @@ public class test3 {
 			// For example: For /dir1/dir2, BACK BUTTON will redirect you to /dir1 
 			extension = extension + filepath.getParent().substring(index);
 			//build back button to html 
-			html.append( "<tr><td class=\"link\"><a href=\"" + extension + "\">" + "Parent Directory" + "</a></td></tr>\r\n" );
+			html.append( "<tr><td valign=\"top\"><img src=\"/icons/dir.png\"></td><td class=\"link\"><a href=\"" + extension + "\">" + "Parent Directory" + "</a></td></tr>\r\n" );
 		}
 		
 		
-		//then show directory of listFiles +name +size+last modified 
-		String iconspath = "C:\\icons\\";
-		String fPath = "";
-		String rowLink;
+		//then show directory of listFiles +name +size+last modified String iconspath = "C:\\icons\\";
 		
 		for ( File file : filepath.listFiles() ){
 			int index = ROOTPATH.getPath().length();
 			String extensionForLocalHost = file.getPath().substring(index);
 			
-			rowLink = "<td valign=\"top\"><img src=\"/icons/xml.png\"></td>";
-			//html.append( "<tr><td valign=\"top\"><img src=\"/icons/"+imageFor(file)+"\"></td>");
-			//html.append( "<tr><td valign=\"top\"><img src=\"/icons/xml.png\"></td>");
-			html.append(rowLink);
-			
-					//rowLink = "<td valign=\"top\"><img src=\"/icons/dir.png\"></td><td valign=\"top\"><a href=" + f.getName() + "/>" + f.getName() + "/</a></td>";
+			html.append( "<tr><td valign=\"top\"><img src=\"/icons/"+imageFor(file)+"\"></td>");
 			html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
 			html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
 			html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
@@ -480,8 +468,7 @@ public class test3 {
 	getFileSize(File file) gets a file as input and returns 
 	its size in a String in corresponding bytes size.
 	*/
-    public static String getFileSize( File file )
-    {
+    public static String getFileSize( File file ){
         double bytes = file.length();
         double kilobytes = ( bytes / 1024);
         double megabytes = (kilobytes / 1024);
@@ -506,8 +493,6 @@ public class test3 {
 		  int index = f.getName().lastIndexOf('.');
 		  ext=  f.getName().substring(index);
 		  ext = ext.toLowerCase();
-		  //ext = getMimeExtension(ext); //including dot (.)
-		  System.out.println(f.getName() + " file has extension of " +ext );
       }
 	  catch(Exception e){}
 	  
@@ -588,6 +573,10 @@ public class test3 {
         default:
           icon += "txt.png";      
       }
+	  //if file is Directory give the correct icon
+	  if(f.isDirectory()){
+		  icon="dir.png";
+	  }
 	  
 	  return icon;
 	  
