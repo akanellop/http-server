@@ -8,17 +8,25 @@ import java.nio.file.Files;
 public class test3 {
 	/*declare here variables that will be  taken from xml for server "initialization"*/
 	public static String SERVERNAME = "CE325 (Java based server)";
-	public static String ROOT ="C:\\root\\";   //Our files for the WebServer exist inside this folder
-	public static File ROOTPATH=new File (ROOT);
-	public static int  portNumber = 8000;
+	//public static String ROOT ="C:\\root\\";   //Our files for the WebServer exist inside this folder
+	public static String ROOT ;//= xmlParser.getRootDirectory();
+	
+	public static File ROOTPATH;//=new File (ROOT);
+	//public static int  portNumber = 8000;
+	public static int portNumber = xmlParser.getListenPort();
+	
 	
 	
 	
 	public static void main(String[] args) throws IOException, BindException{
 		//various declarations for test2
 		String request="",inputLine="";
-		
-		
+		xmlParser.buildDoc();
+		ROOT = xmlParser.getRootDirectory();
+		ROOTPATH = new File ( ROOT ) ;
+		portNumber =xmlParser.getListenPort();
+		//System.out.println("XML PARSED ROOT = " + ROOT);
+		//System.out.println("XML PARSED portNumber = " + portNumber);
 		//create a serverSocket
 		ServerSocket serverSocket = new ServerSocket(portNumber); 
 		
@@ -103,7 +111,7 @@ public class test3 {
 				
 			//Creates file object for the currently asked object
 			File filepath= new File (ROOT + parts[1]);
-			
+			//System.out.println("filepath = " + filepath);
 			//if you load winehouse.mp3
 			//String fileName = parts[1].getName();
 			//then, extension will be .mp3 
@@ -196,10 +204,11 @@ public class test3 {
 					}
 					else {//else, sendDirectory
 						try {
+							//System.out.println("sending directory");
 							sendDirectory(filepath,out);
 						}
 						catch (Exception E){
-							System.out.println("exception happened");
+							System.out.println("exception happened iin sendDirectory,line 210");
 						}//to create sendDirectory method
 							
 					}
@@ -400,6 +409,16 @@ public class test3 {
         html.append( "<tr><h3><th valign=\"left\"> Name</th><th > Size </th><th>Last Modified </th></h3></tr>\r\n" );
 		html.append( "<tr><th colspan=\"5\"><hr></th></tr>\r\n" );
 		
+		//System.out.println("ROOTPATH = " +ROOTPATH);
+		//System.out.println("line 412, filepath = " + filepath);
+		/*
+		if (filepath.equals(ROOTPATH)){
+			System.out.println("filepath equals rootpath");
+		}
+		else {
+			System.out.println("filepath's name = " + filepath.getName());
+		}
+		*/
 		//if it's not root , then show BACK button
 		if (!filepath.equals(ROOTPATH)) {
 			int index = ROOTPATH.getPath().length();
@@ -410,11 +429,12 @@ public class test3 {
 			}
 			// For example: For /dir1/dir2, BACK BUTTON will redirect you to /dir1 
 			extension = extension + filepath.getParent().substring(index);
+			//System.out.println("extension is " + extension);
 			//build back button to html 
 			html.append( "<tr><td valign=\"top\"><img src=\"/icons/dir.png\"></td><td class=\"link\"><a href=\"" + extension + "\">" + "Parent Directory" + "</a></td></tr>\r\n" );
 		}
 		
-		
+		//System.out.println("line 425");
 		//then show directory of listFiles +name +size+last modified String iconspath = "C:\\icons\\";
 		
 		for ( File file : filepath.listFiles() ){
