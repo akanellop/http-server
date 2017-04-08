@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <ce325server>
-  <listen port="8000" />
-  <statistics port="8001" />
-  <log>
-    <access filepath="/path/to/access_log.txt" />
-    <error filepath="/path/to/error_log.txt" />
-  </log>
-  <documentroot filepath="/path/to/document-root/" />
+	<listenport>8000</listenport>
+	<statisticsport>8001</statisticsport>
+	<documentrootfilepath>/path/to/document-root/</documentrootfilepath>
+	<accessfilepath>/path/to/access_log.txt</accessfilepath>
+	<errorfilepath>/path/to/error_log.txt</errorfilepath>
 </ce325server>

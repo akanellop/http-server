@@ -12,83 +12,111 @@ import org.xml.sax.SAXException;
 
 public class xmlParser {
 
-	private int listenPort;
-	private int statisticsPort;
-	private String port1;
-	private String port2;
-	private String accessDirectory;
-	private String errorDirectory;
-	private String rootDirectory;
+	private static int listenPort;
+	private static int statisticsPort;
+	private static String port1;
+	private static String port2;
+	private static String accessDirectory;
+	private static String errorDirectory;
+	private static String rootDirectory;
 
-	public void buildDoc(){
+	public static void buildDoc(){
 		
 		File file = new File("C:\\root\\config.xml");
 
 		try {
-
+			
 			//create dBuilder object
+			//System.out.println("im inside try");
 			DocumentBuilder dBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			//parse the content of our XML Configuration file to an appropriate object 
 			Document doc = dBuilder.parse(file);
 			
+			//System.out.println(file.getName());
 			
 			//optional, but may be recommended --IS IT NEEDED????
 			doc.getDocumentElement().normalize();
 			//check
-			System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
-
-
+			
+			/*
 			//doc.getElementsByTagName("method") returns a NodeList.
 			//doc.getElementsByTagName("method").item(0) - returns a Node.
 			//doc.getElementsByTagName("method").item(0).getTextContent() returns the value 
-			port1 = doc.getElementsByTagName("listen port").item(0).getTextContent();
-			port2 = doc.getElementsByTagName("statistics port").item(0).getTextContent();
+			*/
 			
-			accessDirectory = doc.getElementsByTagName("access filepath").item(0).getTextContent();
-			errorDirectory  = doc.getElementsByTagName("error filepath").item(0).getTextContent();
+			//System.out.println("before getting elements");
+			//port1 = doc.getElementsByTagName("listen port").item(0).getTextContent();
+			port1 = doc.getElementsByTagName("listenport").item(0).getTextContent();
+			//System.out.println("got port1 " + port1);
+			//System.out.println("after listenport");
+			port2 = doc.getElementsByTagName("statisticsport").item(0).getTextContent();
+			//System.out.println("got port2 " + port2);
+			
+			accessDirectory = doc.getElementsByTagName("accessfilepath").item(0).getTextContent();
+			//System.out.println("got accessDirectory " + accessDirectory);
+			errorDirectory  = doc.getElementsByTagName("errorfilepath").item(0).getTextContent();
+			//System.out.println("got errorDirectory " + errorDirectory);
+			rootDirectory = doc.getElementsByTagName("documentrootfilepath").item(0).getTextContent();
+			//System.out.println("got rootDirectory " + rootDirectory);
 			
 			
-			
+			/*
+			System.out.println("\nbefore tokenizer\n");
+			System.out.println(port1);
+			*/
 			//why is this used???What do we split?
+			/*
 			StringTokenizer tokenizer = new StringTokenizer(port1, "\"");
 			while(tokenizer.hasMoreTokens()){
 				port1 = tokenizer.nextToken();
-			}
+			
+			*/
 			try{
-				//port is returned as a string, so we type cast it to an integer
+				//ports are returned as a string, so we type cast them to integers
 				listenPort = Integer.parseInt(port1);
 				statisticsPort = Integer.parseInt(port2);
+				
 			}catch(NumberFormatException e){
 				e.printStackTrace();
 			}
-
-			rootDirectory = doc.getElementsByTagName("documentroot filepath").item(0).getTextContent();
-
-
-
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			System.out.println(e.getMessage());
+			System.out.println("Exception happened :/ " + e.getMessage());
+			//System.out.println("exception happened");
+			System.out.println(port1+"\n");
 		}
 	}
 
-	public int getListenPort(){
+	public static int getListenPort(){
 		return listenPort;
 	}
 
-	public String getRootDirectory(){
+	public static String getRootDirectory(){
 		return rootDirectory;
 	}
 	
-	public int getStatisticsPort(){
+	public static int getStatisticsPort(){
 		return statisticsPort;
 	}
 	
-	public String accessDirectory(){
+	public static String getAccessDirectory(){
 		return accessDirectory;
 	}
 	
-	public String errorDirectory(){
+	public static String getErrorDirectory(){
 		return errorDirectory;
+	}
+	
+	public static void main(String[] args){
+	
+	//xmlParser.buildDoc();
+	buildDoc();
+	
+	System.out.println("listen port = " + 		getListenPort() );
+	System.out.println("statistics Port = " + 	getStatisticsPort() );
+	System.out.println("rootDirectory = " +		getRootDirectory() );
+	System.out.println("accessDirectory = " +	getAccessDirectory() );
+	System.out.println("errorDirectory = " + 	getErrorDirectory() );
+	
 	}
 }
