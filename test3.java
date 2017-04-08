@@ -9,11 +9,11 @@ public class test3 {
 	/*declare here variables that will be  taken from xml for server "initialization"*/
 	public static String SERVERNAME = "CE325 (Java based server)";
 	//public static String ROOT ="C:\\root\\";   //Our files for the WebServer exist inside this folder
-	public static String ROOT ;//= xmlParser.getRootDirectory();
+	public static String ROOT;// =  xmlParser.getRootDirectory();
 	
-	public static File ROOTPATH;//=new File (ROOT);
+	public static File ROOTPATH ;//= new File (ROOT);
 	//public static int  portNumber = 8000;
-	public static int portNumber = xmlParser.getListenPort();
+	public static int portNumber ;//= xmlParser.getListenPort();
 	
 	
 	
@@ -21,10 +21,15 @@ public class test3 {
 	public static void main(String[] args) throws IOException, BindException{
 		//various declarations for test2
 		String request="",inputLine="";
+		
+		//build config
 		xmlParser.buildDoc();
+		
+		//get config 
 		ROOT = xmlParser.getRootDirectory();
 		ROOTPATH = new File ( ROOT ) ;
 		portNumber =xmlParser.getListenPort();
+		
 		//System.out.println("XML PARSED ROOT = " + ROOT);
 		//System.out.println("XML PARSED portNumber = " + portNumber);
 		//create a serverSocket
