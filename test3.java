@@ -30,8 +30,8 @@ public class test3 {
 		ROOTPATH = new File ( ROOT ) ;
 		portNumber =xmlParser.getListenPort();
 		
-		//System.out.println("XML PARSED ROOT = " + ROOT);
-		//System.out.println("XML PARSED portNumber = " + portNumber);
+		System.out.println("XML PARSED ROOT = " + ROOT);
+		System.out.println("XML PARSED portNumber = " + portNumber);
 		//create a serverSocket
 		ServerSocket serverSocket = new ServerSocket(portNumber); 
 		

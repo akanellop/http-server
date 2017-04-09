@@ -22,7 +22,12 @@ public class xmlParser {
 
 	public static void buildDoc(){
 		
-		File file = new File("C:\\root\\config.xml");
+		//File file = new File("C:\\root\\config.xml");
+		File file = new File("config.xml");
+		//might be needed to get as an argument ?
+		if (file.exists() ) {
+			System.out.println("dir of " + file.getName()+ "is " + file.getAbsolutePath() ) ;
+		}
 
 		try {
 			
