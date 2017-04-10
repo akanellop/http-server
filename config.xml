@@ -3,6 +3,6 @@
 	<listenport>8000</listenport>
 	<statisticsport>8001</statisticsport>
 	<documentrootfilepath>/root/</documentrootfilepath>
-	<accessfilepath>/path/to/access_log.txt</accessfilepath>
-	<errorfilepath>/path/to/error_log.txt</errorfilepath>
+	<accessfilepath>/root/access_log.txt</accessfilepath>
+	<errorfilepath>/root/error_log.txt</errorfilepath>
 </ce325server>
