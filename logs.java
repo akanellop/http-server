@@ -27,7 +27,7 @@ public class logs {
 	
 	public static void main(String[] args) throws IOException, BindException{
 		//various declarations 
-		String request="",inputLine="";
+		String request="",inputLine="",userStr="";
 		
 		//build config
 		xmlParser.buildDoc();
@@ -72,11 +72,17 @@ public class logs {
 				PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 				OutputStream data = new BufferedOutputStream( clientSocket.getOutputStream());
 				
-					
 				//GET HTTP REQUEST from client
-				inputLine = in.readLine();
-				if ( inputLine != null ){
-					request=request + inputLine+"\n";
+				 while ((inputLine = in.readLine()) != null) {
+					if (inputLine.startsWith("GET")){
+						request=request + inputLine+"\n";
+					}
+					else if(inputLine.startsWith("User")){
+						userStr=userStr + inputLine+"\n";
+					}
+					else if(inputLine.startsWith("Accept")){
+						break;
+					}
 				}
 				
 				/*	
@@ -85,10 +91,11 @@ public class logs {
 				*/
 				if (  (request!="" )&&(request!= null)  ) {
 					//System.out.println("Before responsetoClient, Line 49:Request is " + request);	
-					responseToClient(request,out,data);
+					responseToClient(request,userStr,out,data);
 					
 					//Response sent to client, time to close streams/sockets and wait for another request.
 					request="";
+					userStr="";
 						
 					// Close the sockets for safe reasons, they will be created again either way!
 					clientSocket.close();
@@ -118,7 +125,7 @@ public class logs {
 		sendFile ( if a file is requested)
 		sendDirectory ( if a directory is requested)
 	*/
-	private static void responseToClient(String request,PrintWriter out,OutputStream data){
+	private static void responseToClient(String request,String userStr,PrintWriter out,OutputStream data){
 		//various declarations
 		String readFile;
 		String codeStatus;
@@ -190,7 +197,7 @@ public class logs {
 			*/
 			if(!parts[0].equals("GET")){ 
 				codeStatus = "405 Method Not Allowed";
-				writeAccessLog(reqLog,codeStatus);
+				writeAccessLog(reqLog,userStr,codeStatus);
 				responseForError(codeStatus,out);
 			}
 			/*
@@ -198,8 +205,8 @@ public class logs {
 			The file/directory you want does not exist.
 			*/
 			else if(!filepath.exists()){
-				codeStatus = "404";
-				writeAccessLog(reqLog,codeStatus);
+				codeStatus = "404 File Not Found";
+				writeAccessLog(reqLog,userStr,codeStatus);
 				responseForError(codeStatus,out);
 			}
 			/*
@@ -209,7 +216,7 @@ public class logs {
 					( !(parts[2].equals("HTTP/1.1")) && !(parts[2].equals("HTTP/1.0")) ) ){
 					//out.println("400 Bad Request!");
 				codeStatus = "400 Bad Request";
-				writeAccessLog(reqLog,codeStatus);
+				writeAccessLog(reqLog,userStr,codeStatus);
 				responseForError(codeStatus,out);
 				//return;
 			}
@@ -241,7 +248,7 @@ public class logs {
 				// if it is a FILE, write to acces log and then send it
 				if (filepath.isFile() ) { 
 					//sendFile( String versionOfHttp,PrintWriter out, File filepath, String extensionForMime, OutputStream data);
-					writeAccessLog(reqLog,codeStatus);
+					writeAccessLog(reqLog,userStr,codeStatus);
 					sendFile( versionOfHttp, out,  filepath,  extensionForMime,  data);
 				}
 				// if it is a DIRECTORY, send index.htm or show the current dir
@@ -264,13 +271,13 @@ public class logs {
 						
 					if (indexHTML != null) {//if index exists , call sendFile and serve the existing index.html file
 						// 		text/html
-						writeAccessLog(reqLog,codeStatus);
+						writeAccessLog(reqLog,userStr,codeStatus);
 						sendFile( versionOfHttp, out,  indexHTML,  extension,  data);
 					}
 					else {//else, show the existing directory -> sendDirectory
 						try {
 							//System.out.println("sending directory");
-							writeAccessLog(reqLog,codeStatus);
+							writeAccessLog(reqLog,userStr,codeStatus);
 							sendDirectory(filepath,out);
 						}
 						catch (Exception E){ // in case sth bad happens
@@ -295,7 +302,7 @@ public class logs {
 			String exceptionAsString = sw.toString();
 			
 			writeErrorLog(reqLog,exceptionAsString);
-			writeAccessLog(line,codeStatus);
+			writeAccessLog(reqLog,userStr,codeStatus);
 			
 			responseForError(codeStatus,out);
 			System.out.println(e.getMessage());
@@ -318,7 +325,7 @@ public class logs {
                 title = "Bad Request";
                 body = "HTTP Error 400: Bad Request";
                 break;
-            case "404":		//File not Found
+            case "404 File Not Found":		//File not Found
                 title = "File Not Found";
                 body = "HTTP Error 404: File Not Found";
                 break;
@@ -720,7 +727,7 @@ public class logs {
 		This method is called every time before server takes any action like calling method "sendFile"
 		or "sendDirectory" etc
 	*/
-	public static void writeAccessLog(String request,String codeStatus){
+	public static void writeAccessLog(String request,String userStr,String codeStatus){
 		
 		try{
 			//create Writer object so we can *write* in the file 
@@ -744,12 +751,10 @@ public class logs {
 			writerAccess.print(request +"->");
 			
 			//insert codeStatus
-			writerAccess.print(codeStatus+" \"User-Agent: ");
+			writerAccess.print(codeStatus+"->");
 			
 			//insert USER AGENT
-			//
-			//
-			//
+			writerAccess.print(userStr);
 			
 			writerAccess.print("\n");
 			writerAccess.close();
