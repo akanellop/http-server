@@ -49,7 +49,7 @@ public class logs {
 		writerError.print("");
 		writerError.close();
 		
-		
+		//Check
 		System.out.println("XML PARSED ROOT = " + ROOT);
 		System.out.println("XML PARSED ACCESS FILE = " + ACCESS);
 		System.out.println("XML PARSED ERROR FILE = " + ERROR);
@@ -61,6 +61,7 @@ public class logs {
 			
 		while(true ){ //run forever
 			try{
+				
 				/*
 				create a socket(clientSocket) for the client, connect them to the Server and then create:
 				1 InputStream 	: BufferedReader in
@@ -71,21 +72,22 @@ public class logs {
 				PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 				OutputStream data = new BufferedOutputStream( clientSocket.getOutputStream());
 				
-				//while(true ){ //server running continuously
 					
-				//GET req from client
+				//GET HTTP REQUEST from client
 				inputLine = in.readLine();
 				if ( inputLine != null ){
 					request=request + inputLine+"\n";
 				}
+				
 				/*	
 				Send (1st line of) GET REQUEST to send 
 				the appropriate response to our client
 				*/
-				
 				if (  (request!="" )&&(request!= null)  ) {
 					//System.out.println("Before responsetoClient, Line 49:Request is " + request);	
 					responseToClient(request,out,data);
+					
+					//Response sent to client, time to close streams/sockets and wait for another request.
 					request="";
 						
 					// Close the sockets for safe reasons, they will be created again either way!
@@ -95,7 +97,7 @@ public class logs {
 					
 				}
 			}
-			catch(Exception E){
+			catch(Exception E){ //in case something bad happens
 				StringWriter sw = new StringWriter();
 				E.printStackTrace(new PrintWriter(sw));
 				String exceptionAsString = sw.toString();
@@ -104,6 +106,18 @@ public class logs {
 		}
 	}
 	
+	/*
+	responseToClient gets 3 inputs:
+		String request = first line of our HTTP REQUEST
+		PrintWriter Out = clientSocket's output stream. We send there the HTTP RESPONSE for the protocol to work.
+		OutputStream data  = another clientSocket's output stream. After the HTTP Response is sent and we can communicate to the client,
+		we use it to send a File there.
+		
+	So, this method breaks the first line of the HTTP GET REQUEST, and calls a *specific* response method like:
+		responseForError ( for 400/404/405/500 errors)
+		sendFile ( if a file is requested)
+		sendDirectory ( if a directory is requested)
+	*/
 	private static void responseToClient(String request,PrintWriter out,OutputStream data){
 		//various declarations
 		String readFile;
@@ -124,7 +138,7 @@ public class logs {
 			line="";
 			strRead.close();
 		}
-		catch(Exception e){
+		catch(Exception e){ // in case something bad happens
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			String exceptionAsString = sw.toString();
@@ -133,14 +147,15 @@ public class logs {
 			
 		try{
 			//Getting information from the request
-			if (parts.length > 1 ){
+			if (parts.length > 1 ){ //could be removed
 				if (parts[1].matches("(.*)%20(.*)")){   //fix the " " character in file's name 
 					parts[1]=parts[1].replaceAll("%20", " ");
 				}
 				// remove "/" character of C:\root\/
 				parts[1] = parts[1].substring(1); 
 			}
-			if (parts.length == 3){  //get http protocol
+			if (parts.length == 3){   //could be removed
+				//get http protocol 
 				if  (parts[2].equals("HTTP/1.1") ) {
 					versionOfHttp = parts[2];
 				}
@@ -151,14 +166,16 @@ public class logs {
 				
 			//Creates file object for the currently asked object
 			File filepath= new File (ROOT + parts[1]);
+			
 			//System.out.println("filepath = " + filepath);
-			//if you load winehouse.mp3
-			//String fileName = parts[1].getName();
-			//then, extension will be .mp3 
+		
 			try{
+				//if you load winehouse.mp3
+				//then, extension will be .mp3 
 				int index = parts[1].lastIndexOf('.');
 				extensionForMime= parts[1].substring(index);
-			}catch (Exception Ex){
+				
+			}catch (Exception Ex){//in case something bad happens
 				StringWriter sw = new StringWriter();
 				Ex.printStackTrace(new PrintWriter(sw));
 				String exceptionAsString = sw.toString();
@@ -167,10 +184,10 @@ public class logs {
 				//System.out.println("extensionForMime is " +extensionForMime);
 				//use this for Mapping
 				
-				/*
-				ERROR 405 Method Not allowed.
-				Only HTTP GET is supported in this code.
-				*/
+			/*
+			ERROR 405 Method Not allowed.
+			Only HTTP GET is supported in this code.
+			*/
 			if(!parts[0].equals("GET")){ 
 				codeStatus = "405 Method Not Allowed";
 				writeAccessLog(reqLog,codeStatus);
@@ -185,9 +202,9 @@ public class logs {
 				writeAccessLog(reqLog,codeStatus);
 				responseForError(codeStatus,out);
 			}
-				/*
-				ERROR 400 Bad Request 
-				*/
+			/*
+			ERROR 400 Bad Request 
+			*/
 			else if((parts[2]== null ) ||															//&& parts[3]== null)
 					( !(parts[2].equals("HTTP/1.1")) && !(parts[2].equals("HTTP/1.0")) ) ){
 					//out.println("400 Bad Request!");
@@ -197,20 +214,22 @@ public class logs {
 				//return;
 			}
 			else{
-					//200 ok
+				//200 ok
 				codeStatus = "200 OK";
 					
-					//Create an OutputStream so we can send data/bytes there for the client
-					//OutputStream data = new BufferedOutputStream( clientSocket.getOutputStream());
-					
+				//Create an OutputStream so we can send data/bytes there for the client
+				//OutputStream data = new BufferedOutputStream( clientSocket.getOutputStream());		
 
 				try {
-						/*
-						extensionForMime will now get updated to the value we need
-						For example, .txt=text/plain
-						*/
+					/*
+					extensionForMime will now return the appropriate content-type extension
+					we need for html coding.
+					
+					For example, ".txt" corresponds to "text/plain"
+					*/
 					extensionForMime = getMimeExtension(extensionForMime);
-				}catch(Exception Exxxx){
+					
+				}catch(Exception Exxxx){ // in case something bad happens
 					StringWriter sw = new StringWriter();
 					Exxxx.printStackTrace(new PrintWriter(sw));
 					String exceptionAsString = sw.toString();
@@ -218,13 +237,15 @@ public class logs {
 				}
 					//check
 					//System.out.println("extensionForMime is : " + extensionForMime); 
-					
-				if (filepath.isFile() ) { // if it is a FILE, send it
+				
+				// if it is a FILE, write to acces log and then send it
+				if (filepath.isFile() ) { 
 					//sendFile( String versionOfHttp,PrintWriter out, File filepath, String extensionForMime, OutputStream data);
 					writeAccessLog(reqLog,codeStatus);
 					sendFile( versionOfHttp, out,  filepath,  extensionForMime,  data);
 				}
-				else if (filepath.isDirectory() ) {// if it is a DIRECTORY, send index.htm or show the current dir
+				// if it is a DIRECTORY, send index.htm or show the current dir
+				else if (filepath.isDirectory() ) {
 					//sendDirectory
 					//first check index.htm, if not , build some shit
 					File indexHTML;
@@ -234,25 +255,25 @@ public class logs {
 						
 					try {
 						extension = getMimeExtension(".html");
-					}catch (Exception Ex1) {
+					}catch (Exception Ex1) { // in case something bad happens
 						StringWriter sw = new StringWriter();
 						Ex1.printStackTrace(new PrintWriter(sw));
 						String exceptionAsString = sw.toString();
 						writeErrorLog(reqLog,exceptionAsString);
 					}
 						
-					if (indexHTML != null) {//if index exists , call sendFile for it
+					if (indexHTML != null) {//if index exists , call sendFile and serve the existing index.html file
 						// 		text/html
 						writeAccessLog(reqLog,codeStatus);
 						sendFile( versionOfHttp, out,  indexHTML,  extension,  data);
 					}
-					else {//else, sendDirectory
+					else {//else, show the existing directory -> sendDirectory
 						try {
 							//System.out.println("sending directory");
 							writeAccessLog(reqLog,codeStatus);
 							sendDirectory(filepath,out);
 						}
-						catch (Exception E){
+						catch (Exception E){ // in case sth bad happens
 							StringWriter sw = new StringWriter();
 							E.printStackTrace(new PrintWriter(sw));
 							String exceptionAsString = sw.toString();
@@ -263,22 +284,30 @@ public class logs {
 				}
 			}
 		}
-		catch (IOException e) {
-				/*
-				 ERROR 500 Internal Server Error
-				*/
+		catch (IOException e) { //in case sth bad happens
+			/*
+			 ERROR 500 Internal Server Error
+			*/
 			codeStatus = "500 Internal Server Error";
+			
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			String exceptionAsString = sw.toString();
+			
 			writeErrorLog(reqLog,exceptionAsString);
 			writeAccessLog(line,codeStatus);
+			
 			responseForError(codeStatus,out);
 			System.out.println(e.getMessage());
 		}	
 	}
 	
-	
+	/*
+	responseForError takes 2 inputs:
+		String codeStatus
+		PrintWriter out.
+	According to them, sends the appropriate HTTP Response through 'out' and then shows an HTML page for it.
+	*/
 	private static void responseForError(String codeStatus, PrintWriter out) {
 		String title, body;
 
@@ -357,7 +386,12 @@ public class logs {
 		//--------------------------------------------------------
 		
 	}
-	
+
+	/*
+	sendFile method 
+		sends the appropriate HTTP response through 'out'
+		serves the requested file from 'filepath' through 'data'
+	*/
 	public static void sendFile( String versionOfHttp, PrintWriter out, File filepath, String extensionForMime, OutputStream data ) throws IOException{
 		
 		
@@ -414,7 +448,7 @@ public class logs {
 		bytesFromFile.close(); //close file resource 
 	}
 
-	/*s
+	/*
 	searchForIndexHTML takes a File filepath as input
 	and returns the index.htm(l), if there is any, in this directory.
 	Otherwise, it returns null.
@@ -433,6 +467,11 @@ public class logs {
         return null;
     }
 	
+	/*
+	sendDirectory method
+		sends the appropriate HTTP response
+		shows an HTML page of the directory list 
+	*/
 	public static void sendDirectory(File filepath, PrintWriter out) throws Exception{
 		
 		
@@ -567,6 +606,10 @@ public class logs {
             return String.format( "%.1f Bytes", bytes );
     }
 	
+	/*
+	imageFor method 
+		is used for assigning the corresponding icon to each type of file ( by finding its extension ) 
+	*/
 	public static String imageFor(File f){
 		//String test="icons\\doc.png";
 		//return test;
@@ -666,15 +709,21 @@ public class logs {
 	}
 
 	/*
-	writes local ip current date time code status and user agent in access_log.txt,
-	this method is called every time before server takes any action like calling method "sendFile"
-	or "sendDirectory" etc
+	writeAccessLog
+		writes 
+			1)local ip 
+			2)current date time 
+			3)code status 
+			4)user agent 
+		in "access_log.txt" 
+		
+		This method is called every time before server takes any action like calling method "sendFile"
+		or "sendDirectory" etc
 	*/
-	
 	public static void writeAccessLog(String request,String codeStatus){
 		
 		try{
-			//this is how we will write in logs
+			//create Writer object so we can *write* in the file 
 			writerAccess  = new PrintWriter(new FileWriter(ACCESSPATH, true));
 			
 			//find ip of current server
@@ -709,12 +758,15 @@ public class logs {
 	}
 	
 	/*
-	this method is called every time a thread crushes meaning where is creates an exception
-	which shuts down our program
-	in this log there are specifications for the current error
+	writeErrorLog
+		is called every time a thread crushes, meaning where an exception happens
+		(that might cause the end of the program)
+		In this log, there are specifications for the current error each time.
 	*/
 	public static void writeErrorLog(String header,String exception){
 		try{
+			
+			//create Writer for the file-filepath we want
 			writerError=  new PrintWriter(new FileWriter(ERRORPATH, true));
 			
 			//insert REMOTE IP ADDRESS
@@ -727,13 +779,16 @@ public class logs {
 		    writerError.print(" -> ["+(dateFormat.format(date)+"]  -> "));
 			
 			//insert HTTP header
-			writerError.print(header+" -> ");
+			writerError.print(header + " -> ");
 			//insert exception stack trace
 			writerError.print(exception);
 			
+			//close
 			writerError.print("\n");
 			writerError.close();
 		}
-		catch(Exception exx){}
+		catch(Exception exx){
+			
+		}
 	}
 }
