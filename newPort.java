@@ -5,7 +5,7 @@ import java.lang.*;
 import java.text.*;
 import java.nio.file.Files;
 
-public class logs {
+public class newPort {
 	/*declare here variables that will be  taken from xml for server "initialization"*/
 	public static String SERVERNAME = "CE325 (Java based server)";
 	//public static String ROOT ="C:\\root\\";   //Our files for the WebServer exist inside this folder
@@ -14,7 +14,7 @@ public class logs {
 	public static File ROOTPATH ;//= new File (ROOT);
 	//public static int  portNumber = 8000;
 	public static int portNumber ;//= xmlParser.getListenPort();
-	
+	public static int statPortNumber;
 	//Text files for logs
 	public static String ACCESS;
 	public static String ERROR;
@@ -23,11 +23,15 @@ public class logs {
 	//streams to write in logs
 	public static PrintWriter writerAccess,writerError;
 	
+	//global variables for statistics port
+	public static int countTime=0;
+	public static int countCons=0;
+	public static int countErrors=0;
 	
 	
 	public static void main(String[] args) throws IOException, BindException{
 		//various declarations 
-		String request="",inputLine="",userStr="";
+		String request="",inputLine="",inputLine2="",userStr="";
 		
 		//build config
 		xmlParser.buildDoc();
@@ -36,6 +40,7 @@ public class logs {
 		ROOT = xmlParser.getRootDirectory();
 		ROOTPATH = new File ( ROOT ) ;
 		portNumber =xmlParser.getListenPort();
+		statPortNumber = xmlParser.getStatisticsPort();
 		ACCESS = xmlParser.getAccessDirectory();
 		ACCESSPATH = new File(ACCESS);
 		ERROR = xmlParser.getErrorDirectory();
@@ -53,26 +58,27 @@ public class logs {
 		System.out.println("XML PARSED ROOT = " + ROOT);
 		System.out.println("XML PARSED ACCESS FILE = " + ACCESS);
 		System.out.println("XML PARSED ERROR FILE = " + ERROR);
-		System.out.println("XML PARSED portNumber = " + portNumber+"\n");
+		System.out.println("XML PARSED portNumber = " + portNumber);
+		System.out.println("XML PARSED statPortNumber = " + statPortNumber+"\n");
 		//create a serverSocket
 		ServerSocket serverSocket = new ServerSocket(portNumber); 
 		
-		//create logs if they do not exist
-			
+		//create a statistics Socket
+		ServerSocket statSocket = new ServerSocket(statPortNumber); 
+		
 		while(true ){ //run forever
-			/*
+			
+			
+			
+				/*
 				create a socket(clientSocket) for the client, connect them to the Server and then create:
 				1 InputStream 	: BufferedReader in
 				2 OutputStreams : PrintWriter out ( for the HTTP Response) , OutputStream data( for file sending)
 				*/
 				Socket clientSocket = serverSocket.accept();   
-				String remoteAd =clientSocket.getRemoteSocketAddress().toString();
 				BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); 
 				PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 				OutputStream data = new BufferedOutputStream( clientSocket.getOutputStream());
-				
-			try{
-				
 				//GET HTTP REQUEST from client
 				 while ((inputLine = in.readLine()) != null) {
 					if (inputLine.startsWith("GET")){
@@ -85,13 +91,20 @@ public class logs {
 						break;
 					}
 				}
+				
 				/*	
 				Send (1st line of) GET REQUEST to send 
 				the appropriate response to our client
 				*/
 				if (  (request!="" )&&(request!= null)  ) {
-					//System.out.println("Before responsetoClient, Line 49:Request is " + request);	
-					responseToClient(request,userStr,out,data,remoteAd);
+					//if there is a get request for the server send the asked file and time the process
+					long startTime = System.currentTimeMillis();
+					responseToClient(request,userStr,out,data);
+					long stopTime = System.currentTimeMillis();
+					long elapsedTime = stopTime - startTime;
+					countTime=countTime+ (int)elapsedTime;
+					
+					countCons=countCons+1; //Counter for statistics (+1 after succesful connection
 					
 					//Response sent to client, time to close streams/sockets and wait for another request.
 					request="";
@@ -101,14 +114,43 @@ public class logs {
 					clientSocket.close();
 					out.close();
 					data.close();
-					
 				}
+			
+			
+			
+			
+			
+			/*
+			this code is for the statistics socket to be opened and used but the whole program will be blocked
+			because we cant have to sockets.accept() open,, NEEDS THREADS
+			*/
+			
+			
+			
+			
+			try{
+				Socket statClient = statSocket.accept();
+				BufferedReader statIn = new BufferedReader(new InputStreamReader(statClient.getInputStream())); 
+				PrintWriter statOut = new PrintWriter(statClient.getOutputStream(), true);
+				
+				//Get http request from statistics client and call appropriate method if needed
+				inputLine2=statIn.readLine();
+				if (inputLine2!=""){
+					inputLine2="";
+					statHTML(statOut);
+				}
+				
+				statClient.close();
+				statIn.close();
+				statOut.close();
+				
+				
 			}
 			catch(Exception E){ //in case something bad happens
 				StringWriter sw = new StringWriter();
 				E.printStackTrace(new PrintWriter(sw));
 				String exceptionAsString = sw.toString();
-				writeErrorLog(request,exceptionAsString,remoteAd);
+				writeErrorLog(request,exceptionAsString);
 			}
 		}
 	}
@@ -125,7 +167,7 @@ public class logs {
 		sendFile ( if a file is requested)
 		sendDirectory ( if a directory is requested)
 	*/
-	private static void responseToClient(String request,String userStr,PrintWriter out,OutputStream data,String remoteAd){
+	private static void responseToClient(String request,String userStr,PrintWriter out,OutputStream data){
 		//various declarations
 		String readFile;
 		String codeStatus;
@@ -149,7 +191,7 @@ public class logs {
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			String exceptionAsString = sw.toString();
-			writeErrorLog(reqLog,exceptionAsString,remoteAd);
+			writeErrorLog(reqLog,exceptionAsString);
 		}
 			
 		try{
@@ -186,7 +228,7 @@ public class logs {
 				StringWriter sw = new StringWriter();
 				Ex.printStackTrace(new PrintWriter(sw));
 				String exceptionAsString = sw.toString();
-				writeErrorLog(reqLog,exceptionAsString,remoteAd);
+				writeErrorLog(reqLog,exceptionAsString);
 			}
 				//System.out.println("extensionForMime is " +extensionForMime);
 				//use this for Mapping
@@ -240,7 +282,7 @@ public class logs {
 					StringWriter sw = new StringWriter();
 					Exxxx.printStackTrace(new PrintWriter(sw));
 					String exceptionAsString = sw.toString();
-					writeErrorLog(reqLog,exceptionAsString,remoteAd);
+					writeErrorLog(reqLog,exceptionAsString);
 				}
 					//check
 					//System.out.println("extensionForMime is : " + extensionForMime); 
@@ -266,7 +308,7 @@ public class logs {
 						StringWriter sw = new StringWriter();
 						Ex1.printStackTrace(new PrintWriter(sw));
 						String exceptionAsString = sw.toString();
-						writeErrorLog(reqLog,exceptionAsString,remoteAd);
+						writeErrorLog(reqLog,exceptionAsString);
 					}
 						
 					if (indexHTML != null) {//if index exists , call sendFile and serve the existing index.html file
@@ -284,7 +326,7 @@ public class logs {
 							StringWriter sw = new StringWriter();
 							E.printStackTrace(new PrintWriter(sw));
 							String exceptionAsString = sw.toString();
-							writeErrorLog(reqLog,exceptionAsString,remoteAd);
+							writeErrorLog(reqLog,exceptionAsString);
 						}//to create sendDirectory method
 							
 					}
@@ -301,7 +343,7 @@ public class logs {
 			e.printStackTrace(new PrintWriter(sw));
 			String exceptionAsString = sw.toString();
 			
-			writeErrorLog(reqLog,exceptionAsString,remoteAd);
+			writeErrorLog(reqLog,exceptionAsString);
 			writeAccessLog(reqLog,userStr,codeStatus);
 			
 			responseForError(codeStatus,out);
@@ -317,7 +359,7 @@ public class logs {
 	*/
 	private static void responseForError(String codeStatus, PrintWriter out) {
 		String title, body;
-
+		countErrors=countErrors+1; // COUNTER for statistics
 		
 		//The body and the title of the page  are chosen in a switchcase structure.
         switch ( codeStatus )  {
@@ -553,9 +595,6 @@ public class logs {
 		
 		//flush
         out.flush();
-		//close(?)
-		//out.close();
-		//not sure for that
 	}
 	
 	/*
@@ -584,8 +623,7 @@ public class logs {
 	It returns the Date the file was last modified 
 	as a String in a format we want.
 	*/
-	public static String getLastModifiedDate( long timeDate )
-    {
+	public static String getLastModifiedDate( long timeDate ){
         String dateFormat = "EEE, d MMM YYYY HH:mm:ss z";
         SimpleDateFormat sdf = new SimpleDateFormat( dateFormat );
         sdf.setTimeZone( TimeZone.getTimeZone( "GMT" ) );
@@ -768,15 +806,16 @@ public class logs {
 		(that might cause the end of the program)
 		In this log, there are specifications for the current error each time.
 	*/
-	public static void writeErrorLog(String header,String exception,String remoteAd){
+	public static void writeErrorLog(String header,String exception){
 		try{
 			
 			//create Writer for the file-filepath we want
 			writerError=  new PrintWriter(new FileWriter(ERRORPATH, true));
 			
 			//insert REMOTE IP ADDRESS
-			writerError.print(remoteAd);
-		
+			//
+			//
+			
 			//insert Date and Time of the request
 			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 			Date date = new Date();
@@ -795,4 +834,38 @@ public class logs {
 			
 		}
 	}
+
+	public static void statHTML(PrintWriter out)throws Exception{
+		//Create a StringBuilder object, called "html", in which we build the html(you don't say!)
+		StringBuilder html = new StringBuilder();
+
+		//Start of HTML
+        html.append( "<html>\r\n" );
+        html.append( "<head>\r\n" );
+		//Title 
+        html.append( "<title>STATS</title>\r\n" );
+        html.append( "</head>\r\n" );
+        html.append( "<body>\r\n" );
+		
+		html.append( "<h1>Statistics for MY_SERVER</h1>\r\n" );
+		html.append( "<h4>Average time per connection : "+String.valueOf(newPort.countTime/newPort.countCons)+"</h4>\r\n" );
+		html.append( "<h4>Total number of connections : "+newPort.countCons+"</h4>\r\n" );
+		html.append( "<h4>Total number of errors : "+newPort.countErrors+"</h4>\r\n" );
+		//End of HTML
+        html.append( "</body>\r\n" );
+        html.append( "</html>\r\n" );
+		//Send HTTP RESPONSE
+		Date date = new Date();
+        out.print("HTTP/1.1 200 OK" + "\r\n");
+        out.print( "Date: " + date + "\r\n" );
+        out.print( SERVERNAME + "\r\n" );
+        out.print( "Content-length: " + html.toString().length() + "\r\n" );
+        out.print( "Connection: close\r\n" );
+        out.print( "Content-type: text/html\r\n\r\n" );
+		//SEND HTML RESPONSE
+        out.print( html.toString() );
+		//flush
+        out.flush();
+	}
+	
 }
