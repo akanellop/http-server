@@ -52,13 +52,14 @@ public class statThread extends Thread{
 		html.append( "<html>\r\n" );
 		html.append( "<head>\r\n" );
 		//Title 
-		html.append( "<title>STATS</title>\r\n" );
+		html.append( "<title>Statistics For Server</title>\r\n" );
 		html.append( "</head>\r\n" );
 		html.append( "<body>\r\n" );
 			
-		html.append( "<h1>Statistics for MY_SERVER</h1>\r\n" );
+		html.append( "<h1>Statistics for "+mainServer.SERVERNAME+"</h1>\r\n\r\n" );
+		html.append( "<h4>Running since : "+mainServer.initiateTD+"</h4>\r\n" );
 		if(mainServer.countCons!=0){
-			html.append( "<h4>Average time per connection : "+String.valueOf(mainServer.countTime/mainServer.countCons)+"</h4>\r\n" );
+			html.append( "<h4>Average time per connection (secs): "+String.valueOf(mainServer.countTime/mainServer.countCons)+"</h4>\r\n" );
 		}
 		html.append( "<h4>Total number of connections : "+mainServer.countCons+"</h4>\r\n" );
 		html.append( "<h4>Total number of errors : "+mainServer.countErrors+"</h4>\r\n" );

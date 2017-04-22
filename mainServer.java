@@ -33,6 +33,9 @@ public class mainServer{
 	public static BlockingQueue<String> msgQ = new ArrayBlockingQueue<String>(20);
 	
 	//global variables for statistics port
+	public static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	public static Date begDate = new Date();
+	public static String initiateTD=(dateFormat.format(begDate)); //2016/11/16 12:08:43
 	public static volatile int countTime=0; //+1: in clientThread, line 242
 	public static volatile int countCons=0; //+1: in clientThread, line 246
 	public static volatile int countErrors=0; //+1: in clientThread, line 256
