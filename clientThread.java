@@ -448,150 +448,102 @@ public class clientThread extends Thread{
 			html.append( "<tr><td valign=\"top\"><img src=\"/icons/dir.png\"></td><td class=\"link\"><a href=\"" + extension + "\">" + "Parent Directory" + "</a></td></tr>\r\n" );
 		}
 		
-		//System.out.println("line 425");
 		//then show directory of listFiles +name +size+last modified String iconspath = "C:\\icons\\";
-		
+		int counterF=0;
+		int i=0;
 		for ( File file : filepath.listFiles() ){
-			int index = mainServer.ROOTPATH.getPath().length();
-			String extensionForLocalHost = file.getPath().substring(index);
+			counterF=counterF+1;
+		}
+		File types[]=new File[counterF];
+		for ( File file : filepath.listFiles() ){
 			if(imageFor(file).equals("dir.png")){
-				html.append( "<tr><td valign=\"top\"><img src=\"/icons/"+imageFor(file)+"\"></td>");
-				html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
-				html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
-				html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
+				types[i]=file;
+				i=i+1;
 			}
 		}
 		for ( File file : filepath.listFiles() ){
-			int index = mainServer.ROOTPATH.getPath().length();
-			String extensionForLocalHost = file.getPath().substring(index);
 			if(imageFor(file).equals("audio.png")){
-				html.append( "<tr><td valign=\"top\"><img src=\"/icons/"+imageFor(file)+"\"></td>");
-				html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
-				html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
-				html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
+				types[i]=file;
+				i=i+1;
 			}
 		}
 		for ( File file : filepath.listFiles() ){
-			int index = mainServer.ROOTPATH.getPath().length();
-			String extensionForLocalHost = file.getPath().substring(index);
 			if(imageFor(file).equals("doc.png")){
-				html.append( "<tr><td valign=\"top\"><img src=\"/icons/"+imageFor(file)+"\"></td>");
-				html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
-				html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
-				html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
+				types[i]=file;
+				i=i+1;
 			}
 		}
 		for ( File file : filepath.listFiles() ){
-			int index = mainServer.ROOTPATH.getPath().length();
-			String extensionForLocalHost = file.getPath().substring(index);
 			if(imageFor(file).equals("htm.png")){
-				html.append( "<tr><td valign=\"top\"><img src=\"/icons/"+imageFor(file)+"\"></td>");
-				html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
-				html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
-				html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
+				types[i]=file;
+				i=i+1;
 			}
 		}
 		for ( File file : filepath.listFiles() ){
-			int index = mainServer.ROOTPATH.getPath().length();
-			String extensionForLocalHost = file.getPath().substring(index);
 			if(imageFor(file).equals("html.png")){
-				html.append( "<tr><td valign=\"top\"><img src=\"/icons/"+imageFor(file)+"\"></td>");
-				html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
-				html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
-				html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
+				types[i]=file;
+				i=i+1;
 			}
 		}
 		for ( File file : filepath.listFiles() ){
-			int index = mainServer.ROOTPATH.getPath().length();
-			String extensionForLocalHost = file.getPath().substring(index);
 			if(imageFor(file).equals("img.png")){
-				html.append( "<tr><td valign=\"top\"><img src=\"/icons/"+imageFor(file)+"\"></td>");
-				html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
-				html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
-				html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
+				types[i]=file;
+				i=i+1;
 			}
 		}
 		for ( File file : filepath.listFiles() ){
-			int index = mainServer.ROOTPATH.getPath().length();
-			String extensionForLocalHost = file.getPath().substring(index);
 			if(imageFor(file).equals("pdf.png")){
-				html.append( "<tr><td valign=\"top\"><img src=\"/icons/"+imageFor(file)+"\"></td>");
-				html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
-				html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
-				html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
+				types[i]=file;
+				i=i+1;
 			}
 		}
 		for ( File file : filepath.listFiles() ){
-			int index = mainServer.ROOTPATH.getPath().length();
-			String extensionForLocalHost = file.getPath().substring(index);
 			if(imageFor(file).equals("ppt.png")){
-				html.append( "<tr><td valign=\"top\"><img src=\"/icons/"+imageFor(file)+"\"></td>");
-				html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
-				html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
-				html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
+				types[i]=file;
+				i=i+1;
 			}
 		}
 		for ( File file : filepath.listFiles() ){
-			int index = mainServer.ROOTPATH.getPath().length();
-			String extensionForLocalHost = file.getPath().substring(index);
-			if(imageFor(file).equals("ppt.png")){
-				html.append( "<tr><td valign=\"top\"><img src=\"/icons/"+imageFor(file)+"\"></td>");
-				html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
-				html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
-				html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
-			}
-		}
-		for ( File file : filepath.listFiles() ){
-			int index = mainServer.ROOTPATH.getPath().length();
-			String extensionForLocalHost = file.getPath().substring(index);
 			if(imageFor(file).equals("rss.png")){
-				html.append( "<tr><td valign=\"top\"><img src=\"/icons/"+imageFor(file)+"\"></td>");
-				html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
-				html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
-				html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
+				types[i]=file;
+				i=i+1;
 			}
 		}
 		for ( File file : filepath.listFiles() ){
-			int index = mainServer.ROOTPATH.getPath().length();
-			String extensionForLocalHost = file.getPath().substring(index);
 			if(imageFor(file).equals("txt.png")){
-				html.append( "<tr><td valign=\"top\"><img src=\"/icons/"+imageFor(file)+"\"></td>");
-				html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
-				html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
-				html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
+				types[i]=file;
+				i=i+1;
 			}
 		}
 		for ( File file : filepath.listFiles() ){
-			int index = mainServer.ROOTPATH.getPath().length();
-			String extensionForLocalHost = file.getPath().substring(index);
 			if(imageFor(file).equals("video.png")){
-				html.append( "<tr><td valign=\"top\"><img src=\"/icons/"+imageFor(file)+"\"></td>");
-				html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
-				html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
-				html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
+				types[i]=file;
+				i=i+1;
 			}
 		}
 		for ( File file : filepath.listFiles() ){
-			int index = mainServer.ROOTPATH.getPath().length();
-			String extensionForLocalHost = file.getPath().substring(index);
 			if(imageFor(file).equals("xls.png")){
-				html.append( "<tr><td valign=\"top\"><img src=\"/icons/"+imageFor(file)+"\"></td>");
-				html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
-				html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
-				html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
+				types[i]=file;
+				i=i+1;
 			}
 		}
 		for ( File file : filepath.listFiles() ){
-			int index = mainServer.ROOTPATH.getPath().length();
-			String extensionForLocalHost = file.getPath().substring(index);
 			if(imageFor(file).equals("xml.png")){
-				html.append( "<tr><td valign=\"top\"><img src=\"/icons/"+imageFor(file)+"\"></td>");
-				html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
-				html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
-				html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
+				types[i]=file;
+				i=i+1;
 			}
 		}
-	
+		
+		
+		for ( File file : types ){
+			int index = mainServer.ROOTPATH.getPath().length();
+			String extensionForLocalHost = file.getPath().substring(index);	
+			html.append( "<tr><td valign=\"top\"><img src=\"/icons/"+imageFor(file)+"\"></td>");
+			html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
+			html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
+			html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
+		}
+		
 
 		html.append( "<tr><th colspan=\"5\"><hr></th></tr>\r\n");
 		
