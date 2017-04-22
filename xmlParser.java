@@ -26,7 +26,8 @@ public class xmlParser {
 		File file = new File("config.xml");
 		//might be needed to get as an argument ?
 		if (file.exists() ) {
-			System.out.println("dir of " + file.getName()+ "is " + file.getAbsolutePath() ) ;
+			//System.out.println("XML PARSED CONFIG FILE  " + file.getName()+ " is " + file.getAbsolutePath() ) ;
+			System.out.println("XML PARSED CONFIG FILE DIR = " + file.getAbsolutePath() ) ;
 		}
 
 		try {

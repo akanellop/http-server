@@ -13,6 +13,7 @@ public class clientThread extends Thread{
 
 	public void run(){
 		//the answering thread runs all the time
+		
 		while(true){
 		    //initiate an object for each call
 			reqOb  curReq = new reqOb("","","",null,null);
@@ -137,7 +138,7 @@ public class clientThread extends Thread{
 						writeErrorLog(reqLog,exceptionAsString,remoteAd);
 					}
 					
-					
+					synchronized (this){
 					// if it is a FILE, write to acces log and then send it
 					if (filepath.isFile() ) {
 						writeAccessLog(reqLog,userStr,codeStatus);
@@ -145,6 +146,7 @@ public class clientThread extends Thread{
 					}
 					// if it is a DIRECTORY, send index.htm or show the current dir (build the directory's html page)
 					else if (filepath.isDirectory() ) {
+						
 						File indexHTML;
 						indexHTML =searchForIndexHTML(filepath);
 						String extension="";
@@ -160,13 +162,19 @@ public class clientThread extends Thread{
 							
 						if (indexHTML != null) {//if index exists , call sendFile and serve the existing index.html file
 							// 		text/html
-							writeAccessLog(reqLog,userStr,codeStatus);
-							sendFile( versionOfHttp, out,  indexHTML,  extension,  data);
+							
+								writeAccessLog(reqLog,userStr,codeStatus);
+								sendFile( versionOfHttp, out,  indexHTML,  extension,  data);
+							
 						}
 						else {//else, show the existing directory -> sendDirectory
 							try {
-								writeAccessLog(reqLog,userStr,codeStatus);
-								sendDirectory(filepath,out);
+								
+									writeAccessLog(reqLog,userStr,codeStatus);
+									sendDirectory(filepath,out);
+								
+								
+								
 							}
 							catch (Exception E){
 								StringWriter sw = new StringWriter();
@@ -176,6 +184,7 @@ public class clientThread extends Thread{
 							}
 								
 						}
+					}
 					}
 				}
 			}
@@ -216,7 +225,7 @@ public class clientThread extends Thread{
 		PrintWriter out.
 	According to them, sends the appropriate HTTP Response through 'out' and then shows an HTML page for it.
 	*/
-	private static void responseForError(String codeStatus, PrintWriter out) {
+	synchronized private static void responseForError(String codeStatus, PrintWriter out) {
 		String title, body;
 		//count each error we send to client, not the internal errors
 		mainServer.countErrors=mainServer.countErrors+1;
@@ -356,7 +365,7 @@ public class clientThread extends Thread{
 	and returns the index.htm(l), if there is any, in this directory.
 	Otherwise, it returns null.
 	*/
-	public static File searchForIndexHTML( File filepath ){
+	synchronized public static File searchForIndexHTML( File filepath ){
         for ( File file : filepath.listFiles() )//enhanced iteration through list of files
         {
             if ( file.isFile()) {
@@ -373,7 +382,7 @@ public class clientThread extends Thread{
 		sends the appropriate HTTP response
 		shows an HTML page of the directory list 
 	*/
-	public static void sendDirectory(File filepath, PrintWriter out) throws Exception{
+	synchronized public static void sendDirectory(File filepath, PrintWriter out) throws Exception{
 		
 		
 		//--------------------------------------------------------
@@ -592,6 +601,8 @@ public class clientThread extends Thread{
 	synchronized public static String imageFor(File f){
 	  String icon = "";
 	  String ext="";
+	  
+		
 	  try{
 		  int index = f.getName().lastIndexOf('.');
 		  ext=  f.getName().substring(index);

@@ -37,7 +37,7 @@ public class mainServer{
 	public static volatile int countCons=0; //+1: in clientThread, line 246
 	public static volatile int countErrors=0; //+1: in clientThread, line 256
 	
-	public static void main(String[] args) throws IOException, BindException{
+	public static void main(String[] args) throws IOException, BindException, InterruptedException{
 		
 		String request="",inputLine="",userStr="",remoteAd="";
 		BufferedReader in = null;
@@ -82,7 +82,9 @@ public class mainServer{
 		t1.start();
 		clientThread t2= new clientThread();
 		t2.start();
-
+		
+		
+		
 		while(true ){ //run forever
 			 
 			 /*
@@ -115,6 +117,7 @@ public class mainServer{
 				if (  (request!="" )&&(request!= null)  ) {
 					try{
 						//put the info for the specific request in queue
+						
 						reqOb curReq = new reqOb(request,userStr,remoteAd,out,data);
 						msgQ.put(curReq);				
 					}
