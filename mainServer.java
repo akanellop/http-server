@@ -13,11 +13,10 @@ public class mainServer{
 	public static String SERVERNAME = "CE325 (Java based server)";
 	//public static String ROOT ="C:\\root\\";   //Our files for the WebServer exist inside this folder
 	public static String ROOT;// =  xmlParser.getRootDirectory();
-	
 	public static File ROOTPATH ;//= new File (ROOT);
 	//public static int  portNumber = 8000;
 	public static int portNumber ;//= xmlParser.getListenPort();
-	
+	public static int statPortNumber;
 	//Text files for logs
 	public static String ACCESS;
 	public static String ERROR;
@@ -26,17 +25,20 @@ public class mainServer{
 	//streams to write in logs
 	public static PrintWriter writerAccess,writerError;
 	
-	//public variables for other classes
+	//public variables for other classes and concurrency
 	public static String request="",inputLine="",userStr="",remoteAd="";
 	public static BufferedReader in = null;
 	public static PrintWriter out = null;
 	public static OutputStream data =null;
 	public static BlockingQueue<String> msgQ = new ArrayBlockingQueue<String>(20);
 	
+	//global variables for statistics port
+	public static volatile int countTime=0; //+1: in clientThread, line 242
+	public static volatile int countCons=0; //+1: in clientThread, line 246
+	public static volatile int countErrors=0; //+1: in clientThread, line 256
 	
 	public static void main(String[] args) throws IOException, BindException{
-		//various declarations 
-		
+			
 		//build config
 		xmlParser.buildDoc();
 		
@@ -44,6 +46,7 @@ public class mainServer{
 		ROOT = xmlParser.getRootDirectory();
 		ROOTPATH = new File ( ROOT ) ;
 		portNumber =xmlParser.getListenPort();
+		statPortNumber=xmlParser.getStatisticsPort();
 		ACCESS = xmlParser.getAccessDirectory();
 		ACCESSPATH = new File(ACCESS);
 		ERROR = xmlParser.getErrorDirectory();
@@ -65,6 +68,10 @@ public class mainServer{
 		//create a serverSocket
 		ServerSocket serverSocket = new ServerSocket(portNumber); 
 		
+		//initiate thread for statistics port
+		statThread statistics= new statThread();
+		statistics.start();
+
 		//myQueue = new ArrayBlockingQueue<String>(20);
 					
 		while(true ){ //run forever
@@ -106,9 +113,9 @@ public class mainServer{
 						t1.start();
 						t1.join();
 						
-						clientThread t2= new clientThread(request,userStr,out,data,remoteAd);
-						t2.start();
-						t2.join();
+					//	clientThread t2= new clientThread(request,userStr,out,data,remoteAd);
+					//	t2.start();
+					//	t2.join();
 						
 					}
 					catch(InterruptedException e){

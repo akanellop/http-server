@@ -34,8 +34,8 @@ public class clientThread extends Thread{
 		sendDirectory ( if a directory is requested)
 	*/
 	public void run(){
-		
-		//System.out.println(Thread.currentThread().getName());
+		long startTime = System.currentTimeMillis();
+		//System.out.println(Thread.currentThread().getName() + "  line 38\n");
 		//System.out.println(mainServer.msgQ.size());
 		if (mainServer.msgQ.size() > 0 ) {
 			try {
@@ -98,7 +98,7 @@ public class clientThread extends Thread{
 			File filepath= new File (mainServer.ROOT + parts[1]);
 			
 			//System.out.println("filepath = " + filepath);
-		
+		//System.out.println(Thread.currentThread().getName() + "  line 100\n");
 			try{
 				//if you load winehouse.mp3
 				//then, extension will be .mp3 
@@ -106,7 +106,7 @@ public class clientThread extends Thread{
 				extensionForMime= parts[1].substring(index);
 				
 			}catch (Exception Ex){//in case something bad happens
-			System.out.println("180 line");
+			//System.out.println("180 line");
 				StringWriter sw = new StringWriter();
 				Ex.printStackTrace(new PrintWriter(sw));
 				String exceptionAsString = sw.toString();
@@ -161,7 +161,7 @@ public class clientThread extends Thread{
 					extensionForMime = getMimeExtension(extensionForMime);
 					
 				}catch(Exception Exxxx){ // in case something bad happens
-				System.out.println("163 line");
+				//System.out.println("163 line");
 					StringWriter sw = new StringWriter();
 					Exxxx.printStackTrace(new PrintWriter(sw));
 					String exceptionAsString = sw.toString();
@@ -206,7 +206,7 @@ public class clientThread extends Thread{
 							sendDirectory(filepath,out);
 						}
 						catch (Exception E){ // in case sth bad happens
-						System.out.println("208 line");
+						//System.out.println("208 line");
 							StringWriter sw = new StringWriter();
 							E.printStackTrace(new PrintWriter(sw));
 							String exceptionAsString = sw.toString();
@@ -214,6 +214,7 @@ public class clientThread extends Thread{
 						}//to create sendDirectory method
 							
 					}
+					//System.out.println(Thread.currentThread().getName() + "  line 217\n");
 				}
 			}
 		}
@@ -234,6 +235,14 @@ public class clientThread extends Thread{
 			responseForError(codeStatus,out);
 			//System.out.println(e.getMessage());
 		}	
+		
+		long stopTime = System.currentTimeMillis();
+		long elapsedTime = stopTime - startTime;
+		//COUNT the running time for each response and add it to total
+		mainServer.countTime=mainServer.countTime+ (int)elapsedTime;
+		//Count total connections asked from server
+		mainServer.countCons=mainServer.countCons+1; //Counter for statistics (+1 after succesful connection
+					
 	}
 	
 	/*
@@ -244,8 +253,8 @@ public class clientThread extends Thread{
 	*/
 	private static void responseForError(String codeStatus, PrintWriter out) {
 		String title, body;
-
-		
+		//count each error we send to client, not the internal errors
+		mainServer.countErrors=mainServer.countErrors+1;
 		//The body and the title of the page  are chosen in a switchcase structure.
         switch ( codeStatus )  {
             case "400 Bad Request":		//Bad Request
@@ -656,6 +665,7 @@ public class clientThread extends Thread{
 	synchronized  public static void writeAccessLog(String request,String userStr,String codeStatus){
 		
 		try{
+			//System.out.println(Thread.currentThread().getName() + "  line 660\n");
 			//create Writer object so we can *write* in the file 
 			mainServer.writerAccess  = new PrintWriter(new FileWriter(mainServer.ACCESSPATH, true));
 			
