@@ -9,6 +9,8 @@ import java.nio.file.Files;
 
 public class mainServer{
 
+//public variables/fields for other classes and concurrency 
+
 	/*declare here variables that will be  taken from xml for server "initialization"*/
 	public static String SERVERNAME = "CE325 (Java based server)";
 	//public static String ROOT ="C:\\root\\";   //Our files for the WebServer exist inside this folder
@@ -24,13 +26,8 @@ public class mainServer{
 	public static File ERRORPATH;
 	//streams to write in logs
 	public static PrintWriter writerAccess,writerError;
-	
-	//public variables for other classes and concurrency
-	public static String request="",inputLine="",userStr="",remoteAd="";
-	public static BufferedReader in = null;
-	public static PrintWriter out = null;
-	public static OutputStream data =null;
-	public static BlockingQueue<String> msgQ = new ArrayBlockingQueue<String>(20);
+	//blocking queue for request objects
+	public static BlockingQueue<reqOb> msgQ = new ArrayBlockingQueue<reqOb>(10);
 	
 	//global variables for statistics port
 	public static DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -41,6 +38,11 @@ public class mainServer{
 	public static volatile int countErrors=0; //+1: in clientThread, line 256
 	
 	public static void main(String[] args) throws IOException, BindException{
+		
+		String request="",inputLine="",userStr="",remoteAd="";
+		BufferedReader in = null;
+		PrintWriter out = null;
+		OutputStream data =null;
 			
 		//build config
 		xmlParser.buildDoc();
@@ -68,29 +70,32 @@ public class mainServer{
 		System.out.println("XML PARSED ACCESS FILE = " + ACCESS);
 		System.out.println("XML PARSED ERROR FILE = " + ERROR);
 		System.out.println("XML PARSED portNumber = " + portNumber+"\n");
-		//create a serverSocket
+		
+		//create a serverSocket, using the given port
 		ServerSocket serverSocket = new ServerSocket(portNumber); 
 		
-		//initiate thread for statistics port
+		//initiate thread for statistics port, code in statThread class
 		statThread statistics= new statThread();
 		statistics.start();
+		//initiate thread for sending response to server port, code in clientThread class
+		clientThread t1= new clientThread();
+		t1.start();
+		clientThread t2= new clientThread();
+		t2.start();
 
-		//myQueue = new ArrayBlockingQueue<String>(20);
-					
 		while(true ){ //run forever
-			/*
+			 
+			 /*
 				create a socket(clientSocket) for the client, connect them to the Server and then create:
 				1 InputStream 	: BufferedReader in
 				2 OutputStreams : PrintWriter out ( for the HTTP Response) , OutputStream data( for file sending)
 				*/
-				Socket clientSocket = serverSocket.accept();   
-				remoteAd =clientSocket.getRemoteSocketAddress().toString();
-				in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); 
-				out = new PrintWriter(clientSocket.getOutputStream(), true);
-				data = new BufferedOutputStream( clientSocket.getOutputStream());
-				
+			Socket clientSocket = serverSocket.accept();   
+			remoteAd =clientSocket.getRemoteSocketAddress().toString();
+			in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); 
+			out = new PrintWriter(clientSocket.getOutputStream(), true);
+			data = new BufferedOutputStream( clientSocket.getOutputStream());
 			try{
-				
 				//GET HTTP REQUEST from client
 				 while ((inputLine = in.readLine()) != null) {
 					if (inputLine.startsWith("GET")){
@@ -108,18 +113,10 @@ public class mainServer{
 				the appropriate response to our client
 				*/
 				if (  (request!="" )&&(request!= null)  ) {
-					//System.out.println("Before responsetoClient, Line 49:Request is " + request);	
-					//clientThread.responseToClient(request,userStr,out,data,remoteAd);
 					try{
-						msgQ.put(request);
-						clientThread t1= new clientThread(request,userStr,out,data,remoteAd);
-						t1.start();
-						t1.join();
-						
-					//	clientThread t2= new clientThread(request,userStr,out,data,remoteAd);
-					//	t2.start();
-					//	t2.join();
-						
+						//put the info for the specific request in queue
+						reqOb curReq = new reqOb(request,userStr,remoteAd,out,data);
+						msgQ.put(curReq);				
 					}
 					catch(InterruptedException e){
 						StringWriter sw = new StringWriter();
@@ -130,13 +127,6 @@ public class mainServer{
 					//Response sent to client, time to close streams/sockets and wait for another request.
 					request="";
 					userStr="";
-						
-					// Close the sockets for safe reasons, they will be created again either way!
-					clientSocket.close();
-					out.close();
-					data.close();
-					
-					
 				}
 			}
 			catch(Exception E){ //in case something bad happens
@@ -145,8 +135,6 @@ public class mainServer{
 				String exceptionAsString = sw.toString();
 				clientThread.writeErrorLog(request,exceptionAsString,remoteAd);
 			}
-					
-					
 		}
 	}
 	

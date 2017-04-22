@@ -10,236 +10,204 @@ public class clientThread extends Thread{
 	public static String request, userStr,remoteAd;
 	public static PrintWriter out;
 	public static OutputStream data;
-	
-	public clientThread(String req, String usr , PrintWriter output, OutputStream dat, String address){
-		request= req; 
-		//System.out.println(Thread.currentThread().getName());
-		userStr=usr;
-		remoteAd= address;
-		out=output;
-		data=dat;
-	}
-	
-		/*
-	responseToClient gets 3 inputs:
-		String request = first line of our HTTP REQUEST
-		PrintWriter Out = clientSocket's output stream. We send there the HTTP RESPONSE for the protocol to work.
-		OutputStream data  = another clientSocket's output stream. After the HTTP Response is sent and we can communicate to the client,
-		we use it to send a File there.
-		
-	So, this method breaks the first line of the HTTP GET REQUEST, and calls a *specific* response method like:
-		responseForError ( for 400/404/405/500 errors)
-		sendFile ( if a file is requested)
-		sendDirectory ( if a directory is requested)
-	*/
+
 	public void run(){
-		long startTime = System.currentTimeMillis();
-		//System.out.println(Thread.currentThread().getName() + "  line 38\n");
-		//System.out.println(mainServer.msgQ.size());
-		if (mainServer.msgQ.size() > 0 ) {
+		//the answering thread runs all the time
+		while(true){
+		    //initiate an object for each call
+			reqOb  curReq = new reqOb("","","",null,null);
+			//take a request , or wait till you take it
 			try {
-				//System.out.println("going to take from msgQ");
-				request = mainServer.msgQ.take();
-				//System.out.println("got from msgQ");
-				//System.out.println(mainServer.msgQ.size());
+				curReq = mainServer.msgQ.take();
 			}catch(Exception E) {
-				System.out.println("problem in taking from *Q* inside constructor");
-			}
-		}
-		
-		
-		//various declarations
-		String readFile;
-		String codeStatus;
-		String [] parts = null;
-		String versionOfHttp= "", extensionForMime="";
-		//split the request so we can get first line (Get line) part by part to check errors
-		BufferedReader strRead = new BufferedReader(new StringReader(request));
-		String line="";
-		String reqLog = request;
-		
-		//get the first line of GET request,and split it word by word
-		try{
-			line=strRead.readLine();
-			parts= line.split("\\s+");
-			line="";
-			strRead.close();
-		}
-		catch(Exception e){ // in case something bad happens
-			StringWriter sw = new StringWriter();
-			e.printStackTrace(new PrintWriter(sw));
-			String exceptionAsString = sw.toString();
-			writeErrorLog(reqLog,exceptionAsString,remoteAd);
-		}
-			
-		try{
-			//Getting information from the request
-			if (parts.length > 1 ){ //could be removed
-				if (parts[1].matches("(.*)%20(.*)")){   //fix the " " character in file's name 
-					parts[1]=parts[1].replaceAll("%20", " ");
-				}
-				// remove "/" character of C:\root\/
-				parts[1] = parts[1].substring(1); 
-			}
-			if (parts.length == 3){   //could be removed
-				//get http protocol 
-				if  (parts[2].equals("HTTP/1.1") ) {
-					versionOfHttp = parts[2];
-				}
-				else if (parts[2].equals("HTTP/1.0") ){
-					versionOfHttp = parts[2];
-				}
-			}
-				
-			//Creates file object for the currently asked object
-			File filepath= new File (mainServer.ROOT + parts[1]);
-			
-			//System.out.println("filepath = " + filepath);
-		//System.out.println(Thread.currentThread().getName() + "  line 100\n");
-			try{
-				//if you load winehouse.mp3
-				//then, extension will be .mp3 
-				int index = parts[1].lastIndexOf('.');
-				extensionForMime= parts[1].substring(index);
-				
-			}catch (Exception Ex){//in case something bad happens
-			//System.out.println("180 line");
 				StringWriter sw = new StringWriter();
-				Ex.printStackTrace(new PrintWriter(sw));
+				E.printStackTrace(new PrintWriter(sw));
+				String exceptionAsString = sw.toString();
+				writeErrorLog("req not taken yet from queue",exceptionAsString,"remoteAd not taken yet from queue");
+			}
+			//take info for request object and start answering
+			long startTime = System.currentTimeMillis();
+			request= curReq.request; 
+			userStr=curReq.userStr;
+			remoteAd= curReq.remoteAd;
+			out=curReq.outStream;
+			data=curReq.dataStream;
+			
+			//various declarations
+			String readFile;
+			String codeStatus;
+			String [] parts = null;
+			String versionOfHttp= "", extensionForMime="";
+			
+			//get the first line of GET request,and split it word by word
+			BufferedReader strRead = new BufferedReader(new StringReader(request));
+			String line="";
+			String reqLog = request;
+			
+			try{
+				line=strRead.readLine();
+				parts= line.split("\\s+"); //parts[] contains each word 
+				line="";
+				strRead.close();
+			}
+			catch(Exception e){ // in case something bad happens
+				StringWriter sw = new StringWriter();
+				e.printStackTrace(new PrintWriter(sw));
 				String exceptionAsString = sw.toString();
 				writeErrorLog(reqLog,exceptionAsString,remoteAd);
 			}
-				//System.out.println("extensionForMime is " +extensionForMime);
-				//use this for Mapping
 				
-			/*
-			ERROR 405 Method Not allowed.
-			Only HTTP GET is supported in this code.
-			*/
-			if(!parts[0].equals("GET")){ 
-				codeStatus = "405 Method Not Allowed";
-				writeAccessLog(reqLog,userStr,codeStatus);
-				responseForError(codeStatus,out);
-			}
-			/*
-			ERROR 404 Not Found.
-			The file/directory you want does not exist.
-			*/
-			else if(!filepath.exists()){
-				codeStatus = "404 File Not Found";
-				writeAccessLog(reqLog,userStr,codeStatus);
-				responseForError(codeStatus,out);
-			}
-			/*
-			ERROR 400 Bad Request 
-			*/
-			else if((parts[2]== null ) ||															//&& parts[3]== null)
-					( !(parts[2].equals("HTTP/1.1")) && !(parts[2].equals("HTTP/1.0")) ) ){
-					//out.println("400 Bad Request!");
-				codeStatus = "400 Bad Request";
-				writeAccessLog(reqLog,userStr,codeStatus);
-				responseForError(codeStatus,out);
-				//return;
-			}
-			else{
-				//200 ok
-				codeStatus = "200 OK";
+			try{
+				//Getting information from the request: file_name, versionOfHttp
+				if (parts.length > 1 ){ 
+					if (parts[1].matches("(.*)%20(.*)")){   //fix the " " character in file's name 
+						parts[1]=parts[1].replaceAll("%20", " ");
+					}
+					// remove "/" character of C:\root\/
+					parts[1] = parts[1].substring(1); 
+				}
+				if (parts.length == 3){
+					//get http protocol 
+					if  (parts[2].equals("HTTP/1.1") ) {
+						versionOfHttp = parts[2];
+					}
+					else if (parts[2].equals("HTTP/1.0") ){
+						versionOfHttp = parts[2];
+					}
+				}
 					
-				//Create an OutputStream so we can send data/bytes there for the client
-				//OutputStream data = new BufferedOutputStream( clientSocket.getOutputStream());		
-
-				try {
-					/*
-					extensionForMime will now return the appropriate content-type extension
-					we need for html coding.
-					
-					For example, ".txt" corresponds to "text/plain"
-					*/
-					extensionForMime = getMimeExtension(extensionForMime);
-					
-				}catch(Exception Exxxx){ // in case something bad happens
-				//System.out.println("163 line");
+				//Creates file object for the currently asked file
+				File filepath= new File (mainServer.ROOT + parts[1]);
+				
+				//example:get the ".mp3" extension part from a file if it is "AmyWinehouse.mp3" 
+				try{
+					int index = parts[1].lastIndexOf('.');
+					extensionForMime= parts[1].substring(index);
+				}catch (Exception Ex){
 					StringWriter sw = new StringWriter();
-					Exxxx.printStackTrace(new PrintWriter(sw));
+					Ex.printStackTrace(new PrintWriter(sw));
 					String exceptionAsString = sw.toString();
 					writeErrorLog(reqLog,exceptionAsString,remoteAd);
 				}
-					//check
-					//System.out.println("extensionForMime is : " + extensionForMime); 
+					
+					
+				/*Use info to check for protocol errors*/
 				
-				// if it is a FILE, write to acces log and then send it
-				if (filepath.isFile() ) { 
-					//sendFile( String versionOfHttp,PrintWriter out, File filepath, String extensionForMime, OutputStream data);
+				/*
+				ERROR 405 Method Not allowed.
+				Only HTTP GET is supported in this code.
+				*/
+				if(!parts[0].equals("GET")){ 
+					codeStatus = "405 Method Not Allowed";
 					writeAccessLog(reqLog,userStr,codeStatus);
-					sendFile( versionOfHttp, out,  filepath,  extensionForMime,  data);
+					responseForError(codeStatus,out);
 				}
-				// if it is a DIRECTORY, send index.htm or show the current dir
-				else if (filepath.isDirectory() ) {
-					//sendDirectory
-					//first check index.htm, if not , build some shit
-					File indexHTML;
-						
-					indexHTML =searchForIndexHTML(filepath);
-					String extension="";
-						
+				/*
+				ERROR 404 Not Found.
+				The file/directory you want does not exist.
+				*/
+				else if(!filepath.exists()){
+					codeStatus = "404 File Not Found";
+					writeAccessLog(reqLog,userStr,codeStatus);
+					responseForError(codeStatus,out);
+				}
+				/*
+				ERROR 400 Bad Request 
+				*/
+				else if((parts[2]== null ) ||( !(parts[2].equals("HTTP/1.1")) && !(parts[2].equals("HTTP/1.0")) ) ){
+					codeStatus = "400 Bad Request";
+					writeAccessLog(reqLog,userStr,codeStatus);
+					responseForError(codeStatus,out);
+				}
+				//else 200 OK ,proceeds to send response
+				else{
+					codeStatus = "200 OK";
 					try {
-						extension = getMimeExtension(".html");
-					}catch (Exception Ex1) { // in case something bad happens
+						/*
+						extensionForMime will now return the appropriate content-type extension
+						we need for html coding.
+						For example, ".txt" corresponds to "text/plain"
+						*/
+						extensionForMime = getMimeExtension(extensionForMime);
+						
+					}catch(Exception Exxxx){
 						StringWriter sw = new StringWriter();
-						Ex1.printStackTrace(new PrintWriter(sw));
+						Exxxx.printStackTrace(new PrintWriter(sw));
 						String exceptionAsString = sw.toString();
 						writeErrorLog(reqLog,exceptionAsString,remoteAd);
 					}
-						
-					if (indexHTML != null) {//if index exists , call sendFile and serve the existing index.html file
-						// 		text/html
+					
+					
+					// if it is a FILE, write to acces log and then send it
+					if (filepath.isFile() ) {
 						writeAccessLog(reqLog,userStr,codeStatus);
-						sendFile( versionOfHttp, out,  indexHTML,  extension,  data);
+						sendFile( versionOfHttp, out,  filepath,  extensionForMime,  data);
 					}
-					else {//else, show the existing directory -> sendDirectory
+					// if it is a DIRECTORY, send index.htm or show the current dir (build the directory's html page)
+					else if (filepath.isDirectory() ) {
+						File indexHTML;
+						indexHTML =searchForIndexHTML(filepath);
+						String extension="";
+							
 						try {
-							//System.out.println("sending directory");
-							writeAccessLog(reqLog,userStr,codeStatus);
-							sendDirectory(filepath,out);
-						}
-						catch (Exception E){ // in case sth bad happens
-						//System.out.println("208 line");
+							extension = getMimeExtension(".html");
+						}catch (Exception Ex1) { // in case something bad happens
 							StringWriter sw = new StringWriter();
-							E.printStackTrace(new PrintWriter(sw));
+							Ex1.printStackTrace(new PrintWriter(sw));
 							String exceptionAsString = sw.toString();
 							writeErrorLog(reqLog,exceptionAsString,remoteAd);
-						}//to create sendDirectory method
+						}
 							
+						if (indexHTML != null) {//if index exists , call sendFile and serve the existing index.html file
+							// 		text/html
+							writeAccessLog(reqLog,userStr,codeStatus);
+							sendFile( versionOfHttp, out,  indexHTML,  extension,  data);
+						}
+						else {//else, show the existing directory -> sendDirectory
+							try {
+								writeAccessLog(reqLog,userStr,codeStatus);
+								sendDirectory(filepath,out);
+							}
+							catch (Exception E){
+								StringWriter sw = new StringWriter();
+								E.printStackTrace(new PrintWriter(sw));
+								String exceptionAsString = sw.toString();
+								writeErrorLog(reqLog,exceptionAsString,remoteAd);
+							}
+								
+						}
 					}
-					//System.out.println(Thread.currentThread().getName() + "  line 217\n");
 				}
 			}
-		}
-		catch (IOException e) { //in case sth bad happens
-			/*
-			 ERROR 500 Internal Server Error
-			*/
-			//System.out.println("223 line");
-			codeStatus = "500 Internal Server Error";
+			catch (IOException e) {
+				/*
+				 ERROR 500 Internal Server Error
+				*/
+				codeStatus = "500 Internal Server Error";
+				
+				StringWriter sw = new StringWriter();
+				e.printStackTrace(new PrintWriter(sw));
+				String exceptionAsString = sw.toString();
+				
+				writeErrorLog(reqLog,exceptionAsString,remoteAd);
+				writeAccessLog(reqLog,userStr,codeStatus);
+				
+				responseForError(codeStatus,out);
+			}	
+									
+			// Close the sockets for safe reasons, they will be created again either way
+			try{
+				out.close();
+				data.close();
+			}catch(Exception e){}
 			
-			StringWriter sw = new StringWriter();
-			e.printStackTrace(new PrintWriter(sw));
-			String exceptionAsString = sw.toString();
-			
-			writeErrorLog(reqLog,exceptionAsString,remoteAd);
-			writeAccessLog(reqLog,userStr,codeStatus);
-			
-			responseForError(codeStatus,out);
-			//System.out.println(e.getMessage());
-		}	
-		
-		long stopTime = System.currentTimeMillis();
-		long elapsedTime = stopTime - startTime;
-		//COUNT the running time for each response and add it to total
-		mainServer.countTime=mainServer.countTime+ (int)elapsedTime;
-		//Count total connections asked from server
-		mainServer.countCons=mainServer.countCons+1; //Counter for statistics (+1 after succesful connection
-					
+			long stopTime = System.currentTimeMillis();
+			long elapsedTime = stopTime - startTime;
+			//COUNT the running time for each response and add it to total
+			mainServer.countTime=mainServer.countTime+ (int)elapsedTime;
+			//COUNT total connections asked from server
+			mainServer.countCons=mainServer.countCons+1; //Counter for statistics (+1 after succesful connection
+		}		
 	}
 	
 	/*
@@ -352,11 +320,8 @@ public class clientThread extends Thread{
 		out.print("\r\n");
 		out.print("Connection: close ");
 		out.print("\r\n");
-		
-		
-		//mime probably , String extensionForMime (?(
+	
 		//Replace this line with getMime shit 
-		//out.print("Content-Type: " + Files.probeContentType(filepath.toPath()) + "\r\n");
 		out.print("Content-Type: " + extensionForMime + "\r\n");
 		out.print("\r\n");
 		//out.print("\r\n");
@@ -367,7 +332,6 @@ public class clientThread extends Thread{
 		//Send Data to client through a 8 KiloBytes Buffer
 		int count;
 		byte[] buffer = new byte[ 8192 ];
-		
 		
 		//########################inside sendFile method//########################
 		
@@ -396,13 +360,11 @@ public class clientThread extends Thread{
         for ( File file : filepath.listFiles() )//enhanced iteration through list of files
         {
             if ( file.isFile()) {
-				//check .htm also(if it is named such due to convention)
 				if (( file.getName().equals( "index.html" )) || ( file.getName().equals( "index.htm" ) ) ){ 
 					return file; //return index.htm
 				}
 			}
         }
-		//else
         return null;
     }
 	
@@ -443,12 +405,12 @@ public class clientThread extends Thread{
 			}
 			// For example: For /dir1/dir2, BACK BUTTON will redirect you to /dir1 
 			extension = extension + filepath.getParent().substring(index);
-			//System.out.println("extension is " + extension);
 			//build back button to html 
 			html.append( "<tr><td valign=\"top\"><img src=\"/icons/dir.png\"></td><td class=\"link\"><a href=\"" + extension + "\">" + "Parent Directory" + "</a></td></tr>\r\n" );
 		}
 		
 		//then show directory of listFiles +name +size+last modified String iconspath = "C:\\icons\\";
+		//multiple for(s) used for sorting
 		int counterF=0;
 		int i=0;
 		for ( File file : filepath.listFiles() ){
@@ -568,9 +530,6 @@ public class clientThread extends Thread{
 		
 		//flush
         out.flush();
-		//close(?)
-		//out.close();
-		//not sure for that
 	}
 	
 	/*
@@ -631,8 +590,6 @@ public class clientThread extends Thread{
 		is used for assigning the corresponding icon to each type of file ( by finding its extension ) 
 	*/
 	synchronized public static String imageFor(File f){
-		//String test="icons\\doc.png";
-		//return test;
 	  String icon = "";
 	  String ext="";
 	  try{
@@ -810,4 +767,3 @@ public class clientThread extends Thread{
 		}
 	}
 }
-	
