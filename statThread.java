@@ -1,3 +1,5 @@
+//package ce325.hw2;
+
 import java.net.*;
 import java.io.*;
 import java.util.*;
@@ -5,7 +7,9 @@ import java.lang.*;
 import java.text.*;
 import java.nio.file.Files;
 
-
+/*
+statThread : class that gives us statistics about the server in 8001 port 
+*/
 public class statThread extends Thread{
 	
 	public void run(){
@@ -18,6 +22,7 @@ public class statThread extends Thread{
 	public static void openSocket() throws IOException, BindException{
 		String inputLine="";
 		ServerSocket statSocket = new ServerSocket(mainServer.statPortNumber); 
+		
 		while(true){
 			try{
 				Socket statClient = statSocket.accept();
@@ -43,13 +48,21 @@ public class statThread extends Thread{
 			}
 		}
 	}
-		/*builds and sends the html page and the http response for the statisstics requests*/
+	
+	/*
+	statHTML method 
+		takes PrintWriter out as an argument so it can send an HTTP RESPONSE and then
+		builds and sends the html page and the http response for the statisstics requests
+	*/
 	public static void statHTML(PrintWriter out)throws Exception{
+		
 		//Create a StringBuilder object, called "html", in which we build the html(you don't say!)
 		StringBuilder html = new StringBuilder();
-		//Start of HTML
+		
+		//Start of HTMLbuilding
 		html.append( "<html>\r\n" );
 		html.append( "<head>\r\n" );
+		
 		//Title 
 		html.append( "<title>Statistics For Server</title>\r\n" );
 		html.append( "</head>\r\n" );
@@ -62,9 +75,10 @@ public class statThread extends Thread{
 		}
 		html.append( "<h4>Total number of connections : "+mainServer.countCons+"</h4>\r\n" );
 		html.append( "<h4>Total number of errors : "+mainServer.countErrors+"</h4>\r\n" );
-		//End of HTML
+		//End of HTML building
 		html.append( "</body>\r\n" );
 		html.append( "</html>\r\n" );
+		
 		//Send HTTP RESPONSE
 		Date date = new Date();
 		out.print("HTTP/1.1 200 OK" + "\r\n");
@@ -73,10 +87,11 @@ public class statThread extends Thread{
 		out.print( "Content-length: " + html.toString().length() + "\r\n" );
 		out.print( "Connection: close\r\n" );
 		out.print( "Content-type: text/html\r\n\r\n" );
+		
 		//SEND HTML RESPONSE
 		out.print( html.toString() );
 		//flush
-		 out.flush();
+		out.flush();
 	}
 
 }

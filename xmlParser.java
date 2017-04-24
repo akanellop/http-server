@@ -1,3 +1,5 @@
+//package ce325.hw2;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.StringTokenizer;
@@ -42,7 +44,6 @@ public class xmlParser {
 			
 			//optional, but may be recommended --IS IT NEEDED????
 			doc.getDocumentElement().normalize();
-			//check
 			
 			/*
 			//doc.getElementsByTagName("method") returns a NodeList.
@@ -50,11 +51,9 @@ public class xmlParser {
 			//doc.getElementsByTagName("method").item(0).getTextContent() returns the value 
 			*/
 			
-			//System.out.println("before getting elements");
-			//port1 = doc.getElementsByTagName("listen port").item(0).getTextContent();
+			
 			port1 = doc.getElementsByTagName("listenport").item(0).getTextContent();
-			//System.out.println("got port1 " + port1);
-			//System.out.println("after listenport");
+			
 			port2 = doc.getElementsByTagName("statisticsport").item(0).getTextContent();
 			//System.out.println("got port2 " + port2);
 			
@@ -66,17 +65,6 @@ public class xmlParser {
 			//System.out.println("got rootDirectory " + rootDirectory);
 			
 			
-			/*
-			System.out.println("\nbefore tokenizer\n");
-			System.out.println(port1);
-			*/
-			//why is this used???What do we split?
-			/*
-			StringTokenizer tokenizer = new StringTokenizer(port1, "\"");
-			while(tokenizer.hasMoreTokens()){
-				port1 = tokenizer.nextToken();
-			
-			*/
 			try{
 				//ports are returned as a string, so we type cast them to integers
 				listenPort = Integer.parseInt(port1);

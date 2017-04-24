@@ -1,3 +1,5 @@
+//package ce325.hw2;
+
 import java.net.*;
 import java.io.*;
 import java.util.concurrent.*;
@@ -7,25 +9,27 @@ import java.text.*;
 import java.nio.file.Files;
 
 
+
 public class mainServer{
 
 //public variables/fields for other classes and concurrency 
 
-	/*declare here variables that will be  taken from xml for server "initialization"*/
+	//declare variables that will be taken from xml for server "initialization"
 	public static String SERVERNAME = "CE325 (Java based server)";
-	//public static String ROOT ="C:\\root\\";   //Our files for the WebServer exist inside this folder
-	public static String ROOT;// =  xmlParser.getRootDirectory();
-	public static File ROOTPATH ;//= new File (ROOT);
-	//public static int  portNumber = 8000;
-	public static int portNumber ;//= xmlParser.getListenPort();
+	public static String ROOT;
+	public static File ROOTPATH ;
+	public static int portNumber ;
 	public static int statPortNumber;
+	
 	//Text files for logs
 	public static String ACCESS;
 	public static String ERROR;
 	public static File ACCESSPATH;
 	public static File ERRORPATH;
+	
 	//streams to write in logs
 	public static PrintWriter writerAccess,writerError;
+	
 	//blocking queue for request objects
 	public static BlockingQueue<reqOb> msgQ = new ArrayBlockingQueue<reqOb>(10);
 	
@@ -37,10 +41,16 @@ public class mainServer{
 	public static volatile int countCons=0; //+1: in clientThread, line 246
 	public static volatile int countErrors=0; //+1: in clientThread, line 256
 	
+	
+	//etc
+	public static Socket clientSocket;
+	public static BufferedReader in ;
+	
 	public static void main(String[] args) throws IOException, BindException, InterruptedException{
 		
+		//init 
 		String request="",inputLine="",userStr="",remoteAd="";
-		BufferedReader in = null;
+		//BufferedReader in = null;
 		PrintWriter out = null;
 		OutputStream data =null;
 			
@@ -74,39 +84,49 @@ public class mainServer{
 		//create a serverSocket, using the given port
 		ServerSocket serverSocket = new ServerSocket(portNumber); 
 		
-		//initiate thread for statistics port, code in statThread class
+		//initiate thread for statistics port, code inside statThread class
 		statThread statistics= new statThread();
 		statistics.start();
-		//initiate thread for sending response to server port, code in clientThread class
+		
+		/*
+		initiate 2 concurrent workers-threads
+		for sending response to server port, code in clientThread class
+		*/
 		clientThread t1= new clientThread();
 		t1.start();
+		
+		//Uncomment the following if you want to have 2 workers and test the concurrency
+		/*
 		clientThread t2= new clientThread();
 		t2.start();
-		
+		*/
 		
 		
 		while(true ){ //run forever
 			 
 			 /*
-				create a socket(clientSocket) for the client, connect them to the Server and then create:
-				1 InputStream 	: BufferedReader in
-				2 OutputStreams : PrintWriter out ( for the HTTP Response) , OutputStream data( for file sending)
-				*/
-			Socket clientSocket = serverSocket.accept();   
+			create a socket(clientSocket) for the client, connect them to the Server and then create:
+			1 InputStream 	: BufferedReader in
+			2 OutputStreams : PrintWriter out ( for the HTTP Response) , OutputStream data( for file sending)
+			*/
+			//Socket 
+			clientSocket = serverSocket.accept();   
 			remoteAd =clientSocket.getRemoteSocketAddress().toString();
 			in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); 
 			out = new PrintWriter(clientSocket.getOutputStream(), true);
 			data = new BufferedOutputStream( clientSocket.getOutputStream());
+			
 			try{
+				
 				//GET HTTP REQUEST from client
 				 while ((inputLine = in.readLine()) != null) {
 					if (inputLine.startsWith("GET")){
-						request=request + inputLine+"\n";
+						request=request + inputLine+"\n"; //1st line of GET request
 					}
 					else if(inputLine.startsWith("User")){
-						userStr=userStr + inputLine+"\n";
+						userStr=userStr + inputLine+"\n"; //User-Agent Line of GET request 
 					}
-					else if(inputLine.startsWith("Accept")){
+					else if(inputLine.startsWith("Accept")){ 
 						break;
 					}
 				}
@@ -114,12 +134,22 @@ public class mainServer{
 				Send (1st line of) GET REQUEST to send 
 				the appropriate response to our client
 				*/
-				if (  (request!="" )&&(request!= null)  ) {
+				if (  (request!="" ) && (request!= null)  ) {
 					try{
+						
 						//put the info for the specific request in queue
 						
+						/*
+						Now, we insert all the required data for the response inside a "reqOb" object.
+						See "reqOb" class and its constructor for more information.
+						*/
 						reqOb curReq = new reqOb(request,userStr,remoteAd,out,data);
-						msgQ.put(curReq);				
+						
+						//put the object(and its data) inside the BlockingQueue
+						msgQ.put(curReq);
+						
+						//t2.start();
+						
 					}
 					catch(InterruptedException e){
 						StringWriter sw = new StringWriter();
@@ -130,6 +160,12 @@ public class mainServer{
 					//Response sent to client, time to close streams/sockets and wait for another request.
 					request="";
 					userStr="";
+					
+					//out.close();
+					//data.close();
+					//in.close();
+					//clientSocket.close();
+					//System.out.println("here");
 				}
 			}
 			catch(Exception E){ //in case something bad happens

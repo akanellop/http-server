@@ -1,3 +1,5 @@
+//package ce325.hw2;
+
 import java.net.*;
 import java.io.*;
 import java.util.concurrent.*;
@@ -33,7 +35,7 @@ public class clientThread extends Thread{
 			remoteAd= curReq.remoteAd;
 			out=curReq.outStream;
 			data=curReq.dataStream;
-			
+			System.out.println(Thread.currentThread().getName()+" ->req : "+request+"\n");
 			//various declarations
 			String readFile;
 			String codeStatus;
@@ -79,19 +81,7 @@ public class clientThread extends Thread{
 					
 				//Creates file object for the currently asked file
 				File filepath= new File (mainServer.ROOT + parts[1]);
-				
-				//example:get the ".mp3" extension part from a file if it is "AmyWinehouse.mp3" 
-				try{
-					int index = parts[1].lastIndexOf('.');
-					extensionForMime= parts[1].substring(index);
-				}catch (Exception Ex){
-					StringWriter sw = new StringWriter();
-					Ex.printStackTrace(new PrintWriter(sw));
-					String exceptionAsString = sw.toString();
-					writeErrorLog(reqLog,exceptionAsString,remoteAd);
-				}
-					
-					
+	
 				/*Use info to check for protocol errors*/
 				
 				/*
@@ -101,6 +91,7 @@ public class clientThread extends Thread{
 				if(!parts[0].equals("GET")){ 
 					codeStatus = "405 Method Not Allowed";
 					writeAccessLog(reqLog,userStr,codeStatus);
+					System.out.println("405 error written in log \n");
 					responseForError(codeStatus,out);
 				}
 				/*
@@ -110,6 +101,7 @@ public class clientThread extends Thread{
 				else if(!filepath.exists()){
 					codeStatus = "404 File Not Found";
 					writeAccessLog(reqLog,userStr,codeStatus);
+					System.out.println("404 error written in log \n");
 					responseForError(codeStatus,out);
 				}
 				/*
@@ -117,7 +109,8 @@ public class clientThread extends Thread{
 				*/
 				else if((parts[2]== null ) ||( !(parts[2].equals("HTTP/1.1")) && !(parts[2].equals("HTTP/1.0")) ) ){
 					codeStatus = "400 Bad Request";
-					writeAccessLog(reqLog,userStr,codeStatus);
+					writeAccessLog(reqLog,userStr,codeStatus);				
+					System.out.println("400 error written in log \n");
 					responseForError(codeStatus,out);
 				}
 				//else 200 OK ,proceeds to send response
@@ -138,9 +131,21 @@ public class clientThread extends Thread{
 						writeErrorLog(reqLog,exceptionAsString,remoteAd);
 					}
 					
-					synchronized (this){
+					synchronized (this){ //remove it 
+					
 					// if it is a FILE, write to acces log and then send it
 					if (filepath.isFile() ) {
+						//example:get the ".mp3" extension part from a file if it is "AmyWinehouse.mp3" 
+						try{
+							int index = parts[1].lastIndexOf('.');
+							extensionForMime= parts[1].substring(index);
+						}catch (Exception Ex){
+							StringWriter sw = new StringWriter();
+							Ex.printStackTrace(new PrintWriter(sw));
+							String exceptionAsString = sw.toString();
+							writeErrorLog(reqLog,exceptionAsString,remoteAd);
+						}
+						
 						writeAccessLog(reqLog,userStr,codeStatus);
 						sendFile( versionOfHttp, out,  filepath,  extensionForMime,  data);
 					}
@@ -169,12 +174,8 @@ public class clientThread extends Thread{
 						}
 						else {//else, show the existing directory -> sendDirectory
 							try {
-								
 									writeAccessLog(reqLog,userStr,codeStatus);
 									sendDirectory(filepath,out);
-								
-								
-								
 							}
 							catch (Exception E){
 								StringWriter sw = new StringWriter();
@@ -200,7 +201,7 @@ public class clientThread extends Thread{
 				
 				writeErrorLog(reqLog,exceptionAsString,remoteAd);
 				writeAccessLog(reqLog,userStr,codeStatus);
-				
+				System.out.println("500 error written in log \n");
 				responseForError(codeStatus,out);
 			}	
 									
@@ -513,6 +514,7 @@ public class clientThread extends Thread{
 			html.append( "<td valign=\"top\"><a href=\""+extensionForLocalHost+"\">"+file.getName()+"</a></td> ");
 			html.append( "<td valign=\"top\">"+(file.isDirectory() ? "- " : getFileSize(file) )+"</td>");
 			html.append( "<td valign=\"top\">"+getLastModifiedDate(file.lastModified())+"</td> </tr>\r\n ");
+			counterF=counterF-1;
 		}
 		
 
