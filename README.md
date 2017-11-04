@@ -1,6 +1,6 @@
-# http-server
+# Web-Server
 
-A simple HTTP server that can serve static files under a given directory.
+A simple HTTP Web Server that can serve static files under a given directory.
 
 The server also supports:
 - Directory listing
@@ -52,5 +52,5 @@ The server also supports:
 		We do this automatically!
 
 *	Contact:
-		Eleftherios Panagiotis Loukas 		: eloukas@uth.gr
+		Eleftherios Panagiotis Loukas 		: eleftheriosloukas@gmail.com - eloukas@uth.gr 
 		Katerina Kanellopoulou 		  	: akanellop@uth.gr
