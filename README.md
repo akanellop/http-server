@@ -9,7 +9,6 @@ The server also supports:
 - Server statistics page
 
 ## Classes explanation:
---------------
 *	mainServer			: our main thread for the server
 *	clientThread 			: worker thread that takes the required data and sends the response
 *	statThread 			: statistics thread
