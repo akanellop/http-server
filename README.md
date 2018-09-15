@@ -16,11 +16,13 @@ The server also supports:
 *	reqOb				: constructs an object with the required data for the clientThread
 
 ## Program explanation:
+
 	mainServer runs a Web-Server continously in its main thread.
 	It can support 2 threads-workers(clientThread class) which handle the response on port 8000.
 	Also, on another thread, we have port 8001 that shows the Statistics about the server.
 
 *	About XML Parsing:
+
 		The Server is configured to run at /root/ directory.
 		(In Windows, it's C:/root/ )
 
@@ -31,9 +33,11 @@ The server also supports:
 		It's in a simpler format for the XML DOM Parser libraries to use, without node-kids searching.
 
 *	About the logs:
+
 		`access_log.txt` and `error_log.txt` are created under /root/.
 
 *	About concurrency-threads :
+
 		Our program can support 2 workers that send responses.
 		We use a BlockingQueue where we load there the required data for the request.
 		The workers take the objects from the queue and work for them sending the response.
@@ -47,9 +51,13 @@ The server also supports:
 		**Last but not least, uncomment line 99-100 in mainServer to test the second worker.**
 
 *	Quick Note:
+
 		There is no need to put the .xml config file as an argument.
-		We do this automatically!
+		
+		We handle this automatically.
 
 *	Contact:
+
 		Eleftherios Panagiotis Loukas 		: eleftheriosloukas@gmail.com - eloukas@uth.gr 
+		
 		Katerina Kanellopoulou 		  	: akanellop@uth.gr
